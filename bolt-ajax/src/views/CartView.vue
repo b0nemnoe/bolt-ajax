@@ -15,16 +15,17 @@
           <tr v-for="(v, k) in botStore.cart">
             <td>{{ botStore.products.find(p => p.id === k).name }}</td>
             <td>{{ botStore.products.find(p => p.id === k).price }} </td>
-            <td>{{ v }}</td>
+            <td><span @click="botStore.modifyQuantity(k, '-')" class="btn btn-secondary">-</span><span class="p-2">{{ v }}</span> <span @click="botStore.modifyQuantity(k, '+')" class="btn btn-secondary">+</span></td>
             <td>{{ v * parseFloat(botStore.products.find(p => p.id === k).price) }} Ft</td>
+            <td><span @click="botStore.deleteProduct(k)" class="btn btn-danger">&#x1f5d1;</span></td>
           </tr>
         </tbody>
-        <tfooter>
+        <tfoot>
           <tr class="fs-5">
             <td colspan="3">Végösszeg: </td>
             <td>{{ botStore.countTotal() }} Ft</td>
           </tr>
-        </tfooter>
+        </tfoot>
       </table>
       <button @click="botStore.emptyCart()" class="btn btn-outline-danger">Kosár kiürítése</button>
     </div>
