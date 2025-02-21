@@ -159,6 +159,14 @@
       "desc": "Elefántos",
       "store": 30,
       "price": "200 Ft"
+    },
+    {
+      "id": "8cd8",
+      "name": "cigany",
+      "unit": "zacskó",
+      "desc": "cig",
+      "store": 4,
+      "price": "1000"
     }
   ],
   "order": []
