@@ -10,22 +10,22 @@ export const useBotStore = defineStore("bot", () => {
 
   const loadAll = async () => {
     try {
-      const response = await fetch("http://localhost:3000/bolt");
-      products.value = await response.json();
+      const response = await fetch("http://localhost:3000/bolt")
+      products.value = await response.json()
 
-      const savedCart = localStorage.getItem("cart");
+      const savedCart = localStorage.getItem("cart")
       if (savedCart) {
-        cart.value = JSON.parse(savedCart);
+        cart.value = JSON.parse(savedCart)
       }
 
       for (const id in cart.value) {
-        const product = products.value.find((p) => p.id == id);
+        const product = products.value.find((p) => p.id == id)
         if (product) {
-          product.store -= cart.value[id];
+          product.store -= cart.value[id]
         }
       }
     } catch (error) {
-      toast.error("Nem sikerült betölteni a termékeket!");
+      toast.error("Nem sikerült betölteni a termékeket!")
     }
   };
 
@@ -42,23 +42,23 @@ export const useBotStore = defineStore("bot", () => {
   }, { deep: true })
 
   const addToCart = (id) => {
-    const product = products.value.find((p) => p.id == id);
+    const product = products.value.find((p) => p.id == id)
   
     if (!product) {
-      toast.error("A termék nem elérhető!");
-      return;
+      toast.error("A termék nem elérhető!")
+      return
     }
   
     if (product.store === 0) {
-      toast.error("Nincs készleten");
+      toast.error("Nincs készleten")
       return;
     }
   
     cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
-    product.store--; 
+    product.store--
   
-    localStorage.setItem("cart", JSON.stringify(cart.value));
-    toast("Kosárhoz adva");
+    localStorage.setItem("cart", JSON.stringify(cart.value))
+    toast("Kosárhoz adva")
   };
   
   const saveProduct = (p) => {
@@ -83,7 +83,7 @@ export const useBotStore = defineStore("bot", () => {
   };
 
   const countTotal = () => {
-    let total = 0;
+    let total = 0
     for (const i in cart.value) {
       total +=
         cart.value[i] * parseFloat(products.value.find((p) => p.id == i).price)
@@ -92,41 +92,41 @@ export const useBotStore = defineStore("bot", () => {
   }
 
   const deleteProduct = (id) => {
-    const product = products.value.find((p) => p.id == id);
+    const product = products.value.find((p) => p.id == id)
     if (product) {
-      product.store += cart.value[id];
+      product.store += cart.value[id]
     }
-    delete cart.value[id];
-    toast.error("Termék törölve a kosárból!");
+    delete cart.value[id]
+    toast.error("Termék törölve a kosárból!")
   }
 
   const modifyQuantity = (id, op) => {
-    if (!cart.value[id]) return; 
+    if (!cart.value[id]) return 
   
-    const product = products.value.find((p) => p.id == id);
-    if (!product) return;
+    const product = products.value.find((p) => p.id == id)
+    if (!product) return
 
     if (op === "+") {
       if (cart.value[id] < product.store + cart.value[id]) {
-        cart.value[id]++;
-        product.store--;
-        toast("Mennyiség növelve");
+        cart.value[id]++
+        product.store--
+        toast("Mennyiség növelve")
       } else {
-        toast.error("Nincs több készleten!");
+        toast.error("Nincs több készleten!")
       }
     } else {
       if (cart.value[id] === 1) {
-        delete cart.value[id];
-        toast.error("Termék eltávolítva a kosárból!");
+        delete cart.value[id]
+        toast.error("Termék eltávolítva a kosárból!")
       } else {
-        cart.value[id]--;
-        toast.warning("Mennyiség csökkentve");
+        cart.value[id]--
+        toast.warning("Mennyiség csökkentve")
       }
-      product.store++;
+      product.store++
     }
   
-    localStorage.setItem("cart", JSON.stringify(cart.value));
-  };
+    localStorage.setItem("cart", JSON.stringify(cart.value))
+  }
   
   return {
     products,
