@@ -89,14 +89,6 @@
       "price": "600 Ft"
     },
     {
-      "id": "15",
-      "name": "alma",
-      "unit": "kg",
-      "desc": "Idared",
-      "store": 400,
-      "price": "380 Ft"
-    },
-    {
       "id": "17",
       "name": "Gumikesztyű",
       "unit": "pár",

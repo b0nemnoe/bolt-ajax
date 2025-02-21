@@ -5,8 +5,8 @@ const botStore = useBotStore()
 </script>
 
 <template>
-  <h1 class="text-center">Termékek</h1>
-  <div class="row">
+  <h1>Termékek</h1>
+  <div class="row gap-5 justify-content-center">
     <div v-for="p in botStore.products" :key="p.id" class="card col-12 col-md-4 col-lg-3">
       <p class="card-title text-center"> {{p.name}}</p>
       <div class="card-body">

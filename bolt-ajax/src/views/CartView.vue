@@ -1,5 +1,5 @@
 <template>
-  <h1 class="text-center">Kosár</h1>
+  <h1>&#128722; Kosár &#128722;</h1>
     <p v-if="Object.entries(botStore.cart).length < 1"> Üres a kosár!</p>
     <div v-else>
       <table class="table table-striped col-md-9">

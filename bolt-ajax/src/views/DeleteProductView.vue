@@ -6,7 +6,7 @@
             <label class="form-check-label" for="deleteByName">Törlés név alapján</label>
         </div>
         <input v-if="deleteByName" class="form-control mb-2" type="text" v-model="productName" placeholder="Termék neve">
-        <input v-else class="form-control mb-2" type="number" v-model="productId" placeholder="Termék ID">
+        <input v-else class="form-control mb-2" type="number" v-model="productId" placeholder="A törölni kívánt termék ID-je..." min="1">
         <button class="btn btn-danger" type="submit">Törlés</button>
     </form>
 </template>

@@ -2,11 +2,16 @@ import { ref, computed, onMounted, watch } from "vue"
 import { defineStore } from "pinia"
 import axios from "axios"
 import { useToast } from "vue-toastification"
+import { OhVueIcon, addIcons } from "oh-vue-icons";
+import { BiBagCheckFill } from "oh-vue-icons/icons";
+import { h } from "vue"
 
+addIcons(BiBagCheckFill);
 export const useBotStore = defineStore("bot", () => {
   const products = ref([])
   const cart = ref({})
   const toast = useToast()
+  
 
   const loadAll = async () => {
     try {
@@ -58,7 +63,13 @@ export const useBotStore = defineStore("bot", () => {
     product.store--
   
     localStorage.setItem("cart", JSON.stringify(cart.value))
-    toast("Kosárhoz adva")
+    toast("Kosárhoz adva", {
+      icon: h(OhVueIcon, 
+        {
+          name: "bi-bag-check-fill", 
+          class: "font-size: 2rem", 
+          animation: "wrench" }),
+    });
   };
   
   const saveProduct = (p) => {
