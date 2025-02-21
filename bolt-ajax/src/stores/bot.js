@@ -63,16 +63,23 @@ export const useBotStore = defineStore("bot", () => {
   
   const saveProduct = (p) => {
     console.log(p);
-
-    products.value.push(p)
+  
+    // Generate a new numeric ID
+    const maxId = products.value.reduce((max, product) => {
+      const id = parseInt(product.id, 10);
+      return id > max ? id : max;
+    }, 0);
+    p.id = (maxId + 1).toString();
+  
+    products.value.push(p);
     axios
       .post("http://localhost:3000/bolt", p)
       .then((resp) => {
-        console.log(resp.statusText)
-        toast("Sikeres mentés")
+        console.log(resp.statusText);
+        toast("Sikeres mentés");
       })
-      .catch(() => toast.error("Hiba"))
-  }
+      .catch(() => toast.error("Hiba"));
+  };
 
   const emptyCart = () => {
     for (const key in cart.value) {
@@ -91,7 +98,7 @@ export const useBotStore = defineStore("bot", () => {
     return total
   }
 
-  const deleteProduct = (id) => {
+  const deleteProductFromCart = (id) => {
     const product = products.value.find((p) => p.id == id)
     if (product) {
       product.store += cart.value[id]
@@ -127,6 +134,40 @@ export const useBotStore = defineStore("bot", () => {
   
     localStorage.setItem("cart", JSON.stringify(cart.value))
   }
+
+  const deleteProductFromDb = (identifier) => {
+    let product;
+  
+    if (!identifier) {
+      toast.error("A termék nem található!")
+      return
+    }
+
+  
+    // Check if the identifier is a number (ID) or a string (name)
+    if (isNaN(identifier)) {
+      // Identifier is a name
+      product = products.value.find((p) => p.name.toLowerCase() === identifier.toLowerCase())
+    } else {
+      // Identifier is an ID
+      product = products.value.find((p) => p.id == identifier)
+    }
+  
+    if (!product) {
+      toast.error("A termék nem található!")
+      return
+    }
+  
+    axios
+      .delete(`http://localhost:3000/bolt/${product.id}`)
+      .then((resp) => {
+        console.log(resp.statusText)
+        toast("Sikeres törlés")
+        // Remove the product from the local products array
+        products.value = products.value.filter((p) => p.id !== product.id)
+      })
+      .catch(() => toast.error("Hiba"))
+  }
   
   return {
     products,
@@ -136,7 +177,8 @@ export const useBotStore = defineStore("bot", () => {
     saveProduct,
     emptyCart,
     countTotal,
-    deleteProduct,
+    deleteProductFromCart,
     modifyQuantity,
+    deleteProductFromDb,
   }
 })

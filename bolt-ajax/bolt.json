@@ -1,14 +1,6 @@
 {
   "bolt": [
     {
-      "id": "1",
-      "name": "tej",
-      "unit": "l",
-      "desc": "zsírtartalom: 2,8 %",
-      "store": 4,
-      "price": "380 Ft"
-    },
-    {
       "id": "2",
       "name": "toboz",
       "unit": "kg",
@@ -17,28 +9,12 @@
       "price": "12000 Ft"
     },
     {
-      "id": "3",
-      "name": "narancslé",
-      "unit": "l",
-      "desc": "Hohes C",
-      "store": 30,
-      "price": "1300 Ft"
-    },
-    {
       "id": "4",
       "name": "Sertészsír",
       "unit": "kg",
       "desc": "Kiváló Magyar Termék; Hidegen sajtolt",
       "store": 20,
       "price": "3200 Ft"
-    },
-    {
-      "id": "5",
-      "name": "alma",
-      "unit": "kg",
-      "desc": "piros, savanyú",
-      "store": 30,
-      "price": "700 Ft"
     },
     {
       "id": "6",
@@ -121,14 +97,6 @@
       "price": "380 Ft"
     },
     {
-      "id": "16",
-      "name": "kuplung tárcsa",
-      "unit": "db",
-      "desc": "Új kuplung",
-      "store": 20,
-      "price": "70000 Ft"
-    },
-    {
       "id": "17",
       "name": "Gumikesztyű",
       "unit": "pár",
@@ -151,22 +119,6 @@
       "desc": "nagyon jo tv",
       "store": 2,
       "price": "380000 Ft"
-    },
-    {
-      "id": "4dcb",
-      "name": "Radír",
-      "unit": "darab",
-      "desc": "Elefántos",
-      "store": 30,
-      "price": "200 Ft"
-    },
-    {
-      "id": "8cd8",
-      "name": "cigany",
-      "unit": "zacskó",
-      "desc": "cig",
-      "store": 4,
-      "price": "1000"
     }
   ],
   "order": []

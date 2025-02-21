@@ -17,7 +17,7 @@
             <td>{{ botStore.products.find(p => p.id === k).price }} </td>
             <td><span @click="botStore.modifyQuantity(k, '-')" class="btn btn-secondary">-</span><span class="p-2">{{ v }}</span> <span @click="botStore.modifyQuantity(k, '+')" class="btn btn-secondary">+</span></td>
             <td>{{ v * parseFloat(botStore.products.find(p => p.id === k).price) }} Ft</td>
-            <td><span @click="botStore.deleteProduct(k)" class="btn btn-danger">&#x1f5d1;</span></td>
+            <td><span @click="botStore.deleteProductFromCart(k)" class="btn btn-danger">&#x1f5d1;</span></td>
           </tr>
         </tbody>
         <tfoot>
