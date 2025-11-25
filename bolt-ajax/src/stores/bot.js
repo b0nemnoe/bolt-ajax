@@ -287,3 +287,7 @@ export const useBotStore = defineStore("bot", () => {
     logout
   }
 })
+
+export const BACKEND_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace('/api', '') // Levágjuk a végéről a /api-t
+  : "http://localhost:3000";

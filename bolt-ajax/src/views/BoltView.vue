@@ -1,5 +1,6 @@
 <script setup>
 import {useBotStore} from '@/stores/bot.js'
+import { BACKEND_URL } from '@/stores/bot.js'
 
 const botStore = useBotStore()
 </script>
@@ -10,7 +11,7 @@ const botStore = useBotStore()
     <div v-for="p in botStore.products" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm">
       
       <img 
-        :src="p.image ? `http://localhost:3000/uploads/${p.image}` : 'https://placehold.co/300x200?text=Nincs+kép'" 
+        :src="p.image ? `${BACKEND_URL}/uploads/${p.image}` : 'https://placehold.co/300x200?text=Nincs+kép'" 
         class="card-img-top" 
         style="height: 200px; object-fit: cover;"
         alt="Termék kép"
