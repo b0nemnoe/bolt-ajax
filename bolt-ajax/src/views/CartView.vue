@@ -12,13 +12,23 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(v, k) in botStore.cart">
-            <td>{{ botStore.products.find(p => p.id === k).name }}</td>
-            <td>{{ botStore.products.find(p => p.id === k).price }} </td>
-            <td><span @click="botStore.modifyQuantity(k, '-')" class="btn btn-secondary">-</span><span class="p-2">{{ v }}</span> <span @click="botStore.modifyQuantity(k, '+')" class="btn btn-secondary">+</span></td>
-            <td>{{ v * parseFloat(botStore.products.find(p => p.id === k).price) }} Ft</td>
-            <td><span @click="botStore.deleteProductFromCart(k)" class="btn btn-danger">&#x1f5d1;</span></td>
-          </tr>
+          <template v-for="(v, k) in botStore.cart" :key="k">
+            <tr v-if="botStore.products.find(p => p.id === k)">
+              <td>{{ botStore.products.find(p => p.id === k).name }}</td>
+              <td>{{ botStore.products.find(p => p.id === k).price }} Ft</td>
+              <td>
+                <span @click="botStore.modifyQuantity(k, '-')" class="btn btn-secondary">-</span>
+                <span class="p-2">{{ v }}</span> 
+                <span @click="botStore.modifyQuantity(k, '+')" class="btn btn-secondary">+</span>
+              </td>
+              <td>
+                {{ v * botStore.products.find(p => p.id === k).price }} Ft
+              </td>
+              <td>
+                <span @click="botStore.deleteProductFromCart(k)" class="btn btn-danger">&#x1f5d1;</span>
+              </td>
+            </tr>
+          </template>
         </tbody>
         <tfoot>
           <tr class="fs-5">
@@ -29,6 +39,13 @@
       </table>
       <button @click="botStore.emptyCart()" class="btn btn-outline-danger">Kosár kiürítése</button>
     </div>
+    <div class="d-flex justify-content-between mt-3">
+        <button @click="botStore.emptyCart()" class="btn btn-outline-danger">Kosár kiürítése</button>
+        
+        <button @click="botStore.checkout()" class="btn btn-success btn-lg">
+          Rendelés elküldése &#10148;
+        </button>
+      </div>
 </template>
 
 <script setup>

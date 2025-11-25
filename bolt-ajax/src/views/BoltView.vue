@@ -7,13 +7,26 @@ const botStore = useBotStore()
 <template>
   <h1>Termékek</h1>
   <div class="row gap-5 justify-content-center">
-    <div v-for="p in botStore.products" :key="p.id" class="card col-12 col-md-4 col-lg-3">
-      <p class="card-title"> {{p.name}}</p>
+    <div v-for="p in botStore.products" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm">
+      
+      <img 
+        :src="p.image ? `http://localhost:3000/uploads/${p.image}` : 'https://placehold.co/300x200?text=Nincs+kép'" 
+        class="card-img-top" 
+        style="height: 200px; object-fit: cover;"
+        alt="Termék kép"
+      >
+      
       <div class="card-body">
-        <p class="card-text">{{ p.price }}</p>
+        <h5 class="card-title">{{ p.name }}</h5>
+        <p class="card-text text-muted">{{ p.desc }}</p>
+        <p class="card-text fw-bold fs-5">{{ p.price }} Ft / {{ p.unit }}</p>
+        <p class="card-text small">Raktáron: {{ p.store }} db</p>
       </div>
-      <div class="card-footer text-center">
-        <button :disabled="p.store == 0" @click="botStore.addToCart(p.id)" class="btn btn-outline-primary w-50">&#128722;</button>
+      
+      <div class="card-footer text-center bg-white border-top-0 mb-2">
+        <button :disabled="p.store == 0" @click="botStore.addToCart(p.id)" class="btn btn-outline-primary w-75">
+          Kosárba &#128722;
+        </button>
       </div>
     </div>
   </div>

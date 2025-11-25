@@ -17,14 +17,23 @@ const cartItemCount = computed(() => {
 
 <template>
   <div class="container">
-    <nav class="text-center">
+    <nav class="text-center my-4">
       <RouterLink class="btn btn-outline-info m-2" to="/">Termékek</RouterLink>
-      <RouterLink class="btn btn-outline-warning m-2" to="/new">Új termék</RouterLink>
-      <RouterLink class="btn btn-outline-danger m-2" to="/delete">Termék törlése</RouterLink>
+      
+      <template v-if="botStore.user && botStore.user.isAdmin">
+        <RouterLink class="btn btn-outline-warning m-2" to="/new">Új termék</RouterLink>
+        <RouterLink class="btn btn-outline-danger m-2" to="/delete">Termék törlése</RouterLink>
+      </template>
+
       <RouterLink class="btn btn-outline-success m-2" to="/cart">
         Kosár <span v-if="cartItemCount > 0">({{ cartItemCount }})</span>
       </RouterLink>
 
+      <button v-if="botStore.token" @click="botStore.logout" class="btn btn-dark m-2">Kijelentkezés</button>
+      <RouterLink v-else class="btn btn-primary m-2" to="/login">Bejelentkezés</RouterLink>
+      <template v-if="botStore.token">
+        <RouterLink class="btn btn-outline-primary m-2" to="/profile">Profil</RouterLink>
+        </template>
     </nav>
     <RouterView />
   </div>
