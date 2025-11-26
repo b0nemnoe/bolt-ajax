@@ -29,8 +29,19 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage: storage });
 
 router.get('/', async (req, res) => {
+    console.log("--> GET /api/products hívás érkezett!"); // Jelez, ha bejön a kérés
+    
     try {
+        // Ellenőrizzük, hogy a modell létezik-e
+        if (!Product) {
+            console.error("HIBA: A Product modell nincs betöltve!");
+            throw new Error("A Product modell hiányzik");
+        }
+
+        console.log("--> Adatbázis lekérdezés indítása...");
         const products = await Product.find();
+        console.log(`--> Siker! Talált termékek száma: ${products.length}`);
+
         const transformed = products.map(p => ({
             id: p._id,
             name: p.name,
@@ -42,7 +53,10 @@ router.get('/', async (req, res) => {
         }));
         res.json(transformed);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        // Itt íratjuk ki a hiba TELJES részleteit a konzolra
+        console.error("!!! VÉGZETES HIBA A LEKÉRDEZÉSKOR !!!");
+        console.error(err); 
+        res.status(500).json({ message: err.message, stack: err.stack });
     }
 });
 
