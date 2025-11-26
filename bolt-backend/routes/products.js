@@ -5,6 +5,7 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
+console.log("--- A PRODUCTS.JS BETÖLTŐDÖTT: CLOUDINARY VERZIÓ ---");
 // --- MIDDLEWARE-EK ---
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
