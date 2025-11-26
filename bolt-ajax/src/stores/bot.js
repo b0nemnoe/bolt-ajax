@@ -5,42 +5,41 @@ import { useToast } from "vue-toastification"
 import { OhVueIcon, addIcons } from "oh-vue-icons";
 import { BiBagCheckFill } from "oh-vue-icons/icons";
 import { h } from "vue"
-import router from '../router'
+import router from '../router' 
 
 addIcons(BiBagCheckFill);
+
+export const BACKEND_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace('/api', '') 
+  : "http://localhost:3000";
 
 export const useBotStore = defineStore("bot", () => {
   const products = ref([])
   const cart = ref({})
-  const token = ref(localStorage.getItem('token') || '') // Token betöltése
-  const user = ref(JSON.parse(localStorage.getItem('user')) || null) // User adatok
+  const token = ref(localStorage.getItem('token') || '') 
+  const user = ref(JSON.parse(localStorage.getItem('user')) || null) 
+  const myOrders = ref([]) 
   const toast = useToast()
   
+  // Dinamikus API URL
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
 
-  // Ha van token, beállítjuk az axios fejlécét indításkor
+  // Token beállítása
   if (token.value) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
 
-  // --- HITELESÍTÉS (LOGIN / REGISTER) ---
-
+  // --- HITELESÍTÉS ---
   const login = async (email, password) => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, { email, password })
-      
-      // Sikeres belépés: adatok mentése
       token.value = response.data.token
       user.value = response.data.user
-      
       localStorage.setItem('token', token.value)
       localStorage.setItem('user', JSON.stringify(user.value))
-      
-      // Axios fejléc beállítása minden jövőbeli kéréshez
       axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
-      
       toast.success("Sikeres bejelentkezés!")
-      router.push('/') // Visszairányítás a főoldalra
+      router.push('/')
     } catch (error) {
       toast.error(error.response?.data?.message || "Hibás bejelentkezés!")
     }
@@ -66,20 +65,16 @@ export const useBotStore = defineStore("bot", () => {
     router.push('/login')
   }
 
-  // --- TERMÉKEK KEZELÉSE ---
-
+  // --- TERMÉKEK ---
   const loadAll = async () => {
     try {
-      // Itt már az új backend végpontot hívjuk
       const response = await axios.get(`${API_URL}/products`)
       products.value = response.data
       
-      // Kosár logika (marad a régi)
       const savedCart = localStorage.getItem("cart")
       if (savedCart) {
         cart.value = JSON.parse(savedCart)
       }
-      // Készlet frissítés a helyi kosár alapján
       for (const id in cart.value) {
         const product = products.value.find((p) => p.id == id)
         if (product) {
@@ -92,10 +87,7 @@ export const useBotStore = defineStore("bot", () => {
     }
   };
 
-  // ... A KOSÁR KEZELÉS MARAD A RÉGI (addToCart, emptyCart, stb.) ...
-  // Csak másold vissza a korábbi kódodból az alábbi függvényeket:
-  // addToCart, countTotal, deleteProductFromCart, modifyQuantity
-
+  // --- KOSÁR ---
   const addToCart = (id) => {
     const product = products.value.find((p) => p.id == id)
     if (!product) { toast.error("A termék nem elérhető!"); return }
@@ -108,8 +100,6 @@ export const useBotStore = defineStore("bot", () => {
     toast("Kosárhoz adva", { icon: h(OhVueIcon, { name: "bi-bag-check-fill", class: "font-size: 2rem", animation: "wrench" }) });
   };
 
-  // ... (A többi kosár függvény változatlan) ...
-  
   const countTotal = () => {
     let total = 0
     for (const i in cart.value) {
@@ -118,6 +108,15 @@ export const useBotStore = defineStore("bot", () => {
     }
     return total
   }
+
+  const emptyCart = () => {
+    for (const key in cart.value) {
+        const p = products.value.find((p) => p.id == key)
+        if(p) p.store += cart.value[key]
+    }
+    cart.value = {}
+    toast.error("Kosár kiürítve")
+  };
 
   const deleteProductFromCart = (id) => {
     const product = products.value.find((p) => p.id == id)
@@ -152,48 +151,69 @@ export const useBotStore = defineStore("bot", () => {
     localStorage.setItem("cart", JSON.stringify(cart.value))
   }
 
-  const emptyCart = () => {
-    for (const key in cart.value) {
-        const p = products.value.find((p) => p.id == key)
-        if(p) p.store += cart.value[key]
+  // --- RENDELÉS ---
+  const checkout = async () => {
+    if (!token.value) {
+      toast.error("A rendeléshez be kell jelentkezned!");
+      router.push('/login');
+      return;
     }
-    cart.value = {}
-    toast.error("Kosár kiürítve")
-  };
+    const orderItems = [];
+    for (const id in cart.value) {
+      const product = products.value.find((p) => p.id == id);
+      if (product) {
+        orderItems.push({
+          productId: id,
+          name: product.name,
+          quantity: cart.value[id],
+          price: product.price
+        });
+      }
+    }
+    if (orderItems.length === 0) {
+      toast.warning("Üres a kosarad!");
+      return;
+    }
+    const total = countTotal();
+    try {
+      await axios.post(`${API_URL}/orders`, {
+        items: orderItems,
+        totalPrice: total
+      });
+      toast.success("Rendelés sikeresen leadva!");
+      cart.value = {}; 
+      localStorage.removeItem('cart');
+      await loadAll(); 
+      router.push('/'); 
+    } catch (error) {
+      toast.error("Hiba a rendelés során: " + (error.response?.data?.message || error.message));
+    }
+  }
 
+  const fetchOrders = async () => {
+    if (!token.value) return 
+    try {
+      const response = await axios.get(`${API_URL}/orders`)
+      myOrders.value = response.data
+    } catch (error) {
+      console.error("Hiba a rendelések betöltésekor:", error)
+    }
+  }
 
-  // --- ADMIN MŰVELETEK (MENTÉS, TÖRLÉS) ---
-
+  // --- ADMIN MŰVELETEK ---
   const saveProduct = (p) => {
-    axios.post(`${API_URL}/products`, p) // Ha 'p' egy FormData, az axios megoldja!
+    axios.post(`${API_URL}/products`, p)
       .then((resp) => {
         products.value.push(resp.data) 
         toast.success("Sikeres mentés")
         router.push('/')
       })
-      // ... hiba kezelés
+      .catch((err) => toast.error("Hiba: " + (err.response?.data?.message || err.message)));
   };
 
-  const deleteProductFromDb = (identifier) => {
-    let product;
-    product = products.value.find(p => p.id == identifier || p.name === identifier)
-
-    if (!product) {
-      toast.error("A termék nem található!")
-      return
-    }
-  
-    axios.delete(`${API_URL}/products/${product.id}`)
-      .then(() => {
-        toast.success("Sikeres törlés")
-        products.value = products.value.filter((p) => p.id !== product.id)
-        router.push('/')
-      })
-      .catch(() => toast.error("Hiba a törléskor"))
-  }
-
+  // Ez az új szerkesztés függvény!
   const updateProduct = (product) => {
-    axios.put(`http://localhost:3000/bolt/${product.id}`, product)
+    axios.put(`${API_URL}/products/${product.id}`, product) // <--- Itt javítottam az URL-t is
       .then(() => {
         const index = products.value.findIndex(p => p.id === product.id)
         if (index !== -1) {
@@ -207,98 +227,44 @@ export const useBotStore = defineStore("bot", () => {
       })
   }
 
+  const deleteProductFromDb = (identifier) => {
+    let product = products.value.find(p => p.id == identifier || p.name === identifier)
+    if (!product) {
+      toast.error("A termék nem található!")
+      return
+    }
+    axios.delete(`${API_URL}/products/${product.id}`)
+      .then(() => {
+        toast.success("Sikeres törlés")
+        products.value = products.value.filter((p) => p.id !== product.id)
+      })
+      .catch(() => toast.error("Hiba a törléskor"))
+  }
+
   watch(cart, (newCart) => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
-
-
-  const checkout = async () => {
-    // 1. Ellenőrzés: van-e bejelentkezve valaki?
-    if (!token.value) {
-      toast.error("A rendeléshez be kell jelentkezned!");
-      router.push('/login');
-      return;
-    }
-
-    // 2. Adatok előkészítése (Object -> Array konverzió)
-    // A backend egy szép listát vár, de a kosarunk egy {id: db} objektum.
-    const orderItems = [];
-    for (const id in cart.value) {
-      const product = products.value.find((p) => p.id == id);
-      if (product) {
-        orderItems.push({
-          productId: id,
-          name: product.name,
-          quantity: cart.value[id],
-          price: product.price
-        });
-      }
-    }
-
-    if (orderItems.length === 0) {
-      toast.warning("Üres a kosarad!");
-      return;
-    }
-
-    const total = countTotal();
-
-    // 3. Küldés a backendnek
-    try {
-      await axios.post(`${API_URL}/orders`, {
-        items: orderItems,
-        totalPrice: total
-      });
-
-      toast.success("Rendelés sikeresen leadva!");
-      
-      // 4. Kosár ürítése (de okosan, ne tegye vissza a készletet, mert eladtuk!)
-      cart.value = {}; 
-      localStorage.removeItem('cart');
-
-      await loadAll();
-      
-      router.push('/'); // Vissza a főoldalra
-    } catch (error) {
-      toast.error("Hiba a rendelés során: " + (error.response?.data?.message || error.message));
-    }
-  }
-
-  const myOrders = ref([])
-
-  const fetchOrders = async () => {
-    if (!token.value) return 
-
-    try {
-      const response = await axios.get(`${API_URL}/orders`)
-      myOrders.value = response.data
-    } catch (error) {
-      console.error("Hiba a rendelések betöltésekor:", error)
-    }
-  }
 
   return {
     products,
     cart,
     token,
     user,
-    checkout,
-    fetchOrders,
     myOrders,
+    toast, // Ezt is exportáljuk, mert a view használja
     loadAll,
     addToCart,
     saveProduct,
-    emptyCart,
     updateProduct,
+    emptyCart,
     countTotal,
     deleteProductFromCart,
     modifyQuantity,
     deleteProductFromDb,
     login,
     register,
-    logout
+    logout,
+    checkout,
+    fetchOrders
   }
 })
-
-export const BACKEND_URL = import.meta.env.VITE_API_URL 
-  ? import.meta.env.VITE_API_URL.replace('/api', '') // Levágjuk a végéről a /api-t
-  : "http://localhost:3000";
