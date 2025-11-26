@@ -2,26 +2,31 @@ const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
 const multer = require('multer');
-const path = require('path');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+
+// --- MIDDLEWARE-EK ---
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 
-// --- MULTER BEÁLLÍTÁSA ---
-const storage = multer.diskStorage({
-    destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // Ide menti a képeket
+// --- CLOUDINARY KONFIGURÁCIÓ ---
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// --- TÁROLÁSI SZABÁLYOK (Storage) ---
+const storage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+        folder: 'bolt_projekt',
+        allowed_formats: ['jpg', 'png', 'jpeg', 'webp'],
     },
-    filename: function (req, file, cb) {
-        // Egyedi fájlnév: mai dátum + eredeti kiterjesztés (pl. 163456789.jpg)
-        cb(null, Date.now() + path.extname(file.originalname));
-    }
 });
 
 const upload = multer({ storage: storage });
 
-// --- ÚTVONALAK ---
-
-// GET (Összes termék) - EZ MARAD A RÉGI
 router.get('/', async (req, res) => {
     try {
         const products = await Product.find();
@@ -32,7 +37,7 @@ router.get('/', async (req, res) => {
             desc: p.desc,
             store: p.store,
             price: p.price,
-            image: p.image // <--- Ezt is visszaküldjük
+            image: p.image
         }));
         res.json(transformed);
     } catch (err) {
@@ -40,8 +45,6 @@ router.get('/', async (req, res) => {
     }
 });
 
-// POST (Új termék) - MÓDOSÍTVA
-// upload.single('image') -> Ez szedi ki a képet a kérésből
 router.post('/', [auth, admin, upload.single('image')], async (req, res) => {
     const product = new Product({
         name: req.body.name,
@@ -49,14 +52,11 @@ router.post('/', [auth, admin, upload.single('image')], async (req, res) => {
         desc: req.body.desc,
         store: req.body.store,
         price: req.body.price,
-        // Ha van feltöltött fájl, elmentjük a nevét, ha nincs, akkor null
-        image: req.file ? req.file.filename : null 
+        image: req.file ? req.file.path : null 
     });
 
     try {
         const newProduct = await product.save();
-        
-        // Visszaküldjük a frontendnek ID-val együtt
         res.status(201).json({
             ...newProduct._doc,
             id: newProduct._id
@@ -66,7 +66,6 @@ router.post('/', [auth, admin, upload.single('image')], async (req, res) => {
     }
 });
 
-// DELETE - EZ MARAD A RÉGI
 router.delete('/:id', [auth, admin], async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);

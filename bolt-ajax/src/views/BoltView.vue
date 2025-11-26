@@ -1,8 +1,20 @@
 <script setup>
-import {useBotStore} from '@/stores/bot.js'
+import { useBotStore } from '@/stores/bot.js'
 import { BACKEND_URL } from '@/stores/bot.js'
 
 const botStore = useBotStore()
+
+const getImageUrl = (imageName) => {
+  if (!imageName) {
+    return 'https://placehold.co/300x200?text=Nincs+kép'
+  }
+  if (imageName.startsWith('http')) {
+    return imageName
+  }
+
+  // Ha maradtak a régi megoldás szerint képek, akkor küldje vissza azokat
+  return `${BACKEND_URL}/uploads/${imageName}`
+}
 </script>
 
 <template>
@@ -11,7 +23,7 @@ const botStore = useBotStore()
     <div v-for="p in botStore.products" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm">
       
       <img 
-        :src="p.image ? `${BACKEND_URL}/uploads/${p.image}` : 'https://placehold.co/300x200?text=Nincs+kép'" 
+        :src="getImageUrl(p.image)" 
         class="card-img-top" 
         style="height: 200px; object-fit: cover;"
         alt="Termék kép"
