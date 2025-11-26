@@ -105,6 +105,26 @@ router.post('/', [auth, admin], (req, res) => {
     });
 });
 
+router.put('/:id', [auth, admin], async (req, res) => {
+    try {
+        // Megkeressük az ID alapján, és frissítjük a bejövő adatokkal (req.body)
+        // { new: true } -> Azt jelenti, hogy a már frissített adatot adja vissza
+        const updatedProduct = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true }
+        );
+
+        if (!updatedProduct) {
+            return res.status(404).json({ message: "A termék nem található" });
+        }
+
+        res.json(updatedProduct);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 router.delete('/:id', [auth, admin], async (req, res) => {
     try {
         await Product.findByIdAndDelete(req.params.id);
