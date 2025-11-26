@@ -22,7 +22,7 @@ const cartItemCount = computed(() => {
       
       <template v-if="botStore.user && botStore.user.isAdmin">
         <RouterLink class="btn btn-outline-warning m-2" to="/new">Új termék</RouterLink>
-        <RouterLink class="btn btn-outline-danger m-2" to="/delete">Termék törlése</RouterLink>
+        <RouterLink class="btn btn-outline-secondary m-2" to="/delete">Termékek kezelése</RouterLink>
       </template>
 
       <RouterLink class="btn btn-outline-success m-2" to="/cart">
