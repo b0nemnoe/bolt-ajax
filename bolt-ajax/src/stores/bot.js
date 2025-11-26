@@ -175,11 +175,7 @@ export const useBotStore = defineStore("bot", () => {
   };
 
   const deleteProductFromDb = (identifier) => {
-    // Keresés név vagy ID alapján (a frontend logikád szerint)
     let product;
-    // Az ID most már string (Mongo ID), így az isNaN nem biztos, hogy elég, 
-    // de a Mongo ID egyedi, a név pedig string. 
-    // Egyszerűsítsünk: keressük meg a terméket a listában
     product = products.value.find(p => p.id == identifier || p.name === identifier)
 
     if (!product) {
@@ -196,7 +192,21 @@ export const useBotStore = defineStore("bot", () => {
       .catch(() => toast.error("Hiba a törléskor"))
   }
 
-  // Watcher a kosár mentéshez
+  const updateProduct = (product) => {
+    axios.put(`http://localhost:3000/bolt/${product.id}`, product)
+      .then(() => {
+        const index = products.value.findIndex(p => p.id === product.id)
+        if (index !== -1) {
+           products.value[index] = { ...product }
+        }
+        toast.success("Sikeres módosítás")
+      })
+      .catch((error) => {
+        console.error(error)
+        toast.error("Hiba a módosításkor")
+      })
+  }
+
   watch(cart, (newCart) => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
@@ -278,6 +288,7 @@ export const useBotStore = defineStore("bot", () => {
     addToCart,
     saveProduct,
     emptyCart,
+    updateProduct,
     countTotal,
     deleteProductFromCart,
     modifyQuantity,
