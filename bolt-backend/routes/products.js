@@ -70,14 +70,27 @@ router.post('/', [auth, admin, upload.single('image')], async (req, res) => {
         image: req.file ? req.file.path : null 
     });
 
+    // ... (a router.post eleje változatlan)
+
     try {
+        console.log("--> Termék mentése folyamatban...");
         const newProduct = await product.save();
+        console.log("--> Termék sikeresen elmentve!");
+        
         res.status(201).json({
             ...newProduct._doc,
             id: newProduct._id
         });
     } catch (err) {
-        res.status(400).json({ message: err.message });
+        console.error("!!! HIBA A MENTÉSKOR !!!");
+        // Ez a sor fogja kiírni a teljes hibaobjektumot olvashatóan:
+        console.error(JSON.stringify(err, null, 2)); 
+        
+        res.status(500).json({ 
+            message: "Szerver hiba történt", 
+            error: err.message || "Ismeretlen hiba",
+            details: err 
+        });
     }
 });
 
