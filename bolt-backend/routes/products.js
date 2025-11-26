@@ -60,38 +60,49 @@ router.get('/', async (req, res) => {
     }
 });
 
-router.post('/', [auth, admin, upload.single('image')], async (req, res) => {
-    const product = new Product({
-        name: req.body.name,
-        unit: req.body.unit,
-        desc: req.body.desc,
-        store: req.body.store,
-        price: req.body.price,
-        image: req.file ? req.file.path : null 
+// POST (Új termék) - EXTRA DEBUG VERZIÓ
+router.post('/', [auth, admin], (req, res) => {
+    // Kézzel indítjuk a feltöltést, hogy elkaphassuk a hibáját
+    const uploadMiddleware = upload.single('image');
+
+    uploadMiddleware(req, res, async (err) => {
+        // 1. HA A FELTÖLTÉS HIBÁRA FUT (Cloudinary hiba itt lesz!)
+        if (err) {
+            console.error("!!! SÚLYOS HIBA A KÉPFELTÖLTÉSNÉL !!!");
+            console.error(JSON.stringify(err, null, 2)); // Kiírjuk a teljes hibát
+            return res.status(500).json({ 
+                message: "Képfeltöltési hiba", 
+                error: err.message || "Ismeretlen Cloudinary hiba",
+                details: err
+            });
+        }
+
+        // 2. HA A FELTÖLTÉS SIKERES, MENTJÜK AZ ADATBÁZISBA
+        try {
+            console.log("--> Kép feltöltve, adatbázis mentés indul...");
+            
+            const product = new Product({
+                name: req.body.name,
+                unit: req.body.unit,
+                desc: req.body.desc,
+                store: req.body.store,
+                price: req.body.price,
+                image: req.file ? req.file.path : null 
+            });
+
+            const newProduct = await product.save();
+            console.log("--> SIKER! Termék elmentve:", newProduct._id);
+            
+            res.status(201).json({
+                ...newProduct._doc,
+                id: newProduct._id
+            });
+        } catch (dbError) {
+            console.error("!!! HIBA AZ ADATBÁZIS MENTÉSNÉL !!!");
+            console.error(dbError);
+            res.status(400).json({ message: dbError.message });
+        }
     });
-
-    // ... (a router.post eleje változatlan)
-
-    try {
-        console.log("--> Termék mentése folyamatban...");
-        const newProduct = await product.save();
-        console.log("--> Termék sikeresen elmentve!");
-        
-        res.status(201).json({
-            ...newProduct._doc,
-            id: newProduct._id
-        });
-    } catch (err) {
-        console.error("!!! HIBA A MENTÉSKOR !!!");
-        // Ez a sor fogja kiírni a teljes hibaobjektumot olvashatóan:
-        console.error(JSON.stringify(err, null, 2)); 
-        
-        res.status(500).json({ 
-            message: "Szerver hiba történt", 
-            error: err.message || "Ismeretlen hiba",
-            details: err 
-        });
-    }
 });
 
 router.delete('/:id', [auth, admin], async (req, res) => {
