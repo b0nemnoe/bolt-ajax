@@ -20,7 +20,7 @@ export const useBotStore = defineStore("bot", () => {
   const token = ref(localStorage.getItem('token') || '') 
   const user = ref(JSON.parse(localStorage.getItem('user')) || null) 
   const myOrders = ref([])
-  const adminOrders = ref([]) // <--- EZ HIÁNYZOTT!
+  const adminOrders = ref([]) 
   const toast = useToast()
   
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
@@ -34,7 +34,7 @@ export const useBotStore = defineStore("bot", () => {
   const onlyInStock = ref(false)
   const sortOrder = ref('default')
 
-  // --- SZŰRT LISTA (COMPUTED) ---
+  // --- SZŰRT LISTA ---
   const filteredProducts = computed(() => {
     let result = products.value.filter(p => {
       const term = searchQuery.value.toLowerCase()
@@ -110,7 +110,7 @@ export const useBotStore = defineStore("bot", () => {
     }
   };
 
-  // --- ADMIN DASHBOARD (RENDELÉSEK) --- EZ HIÁNYZOTT! ---
+  // --- ADMIN DASHBOARD ---
   const fetchAdminOrders = async () => {
     if (!token.value || !user.value?.isAdmin) return
     try {
