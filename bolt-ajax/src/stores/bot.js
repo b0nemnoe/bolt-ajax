@@ -9,12 +9,13 @@ import router from '../router'
 
 addIcons(BiBagCheckFill);
 
-// Dinamikus backend URL exportálása
+// Dinamikus backend URL exportálása (hogy más fájlok is elérjék)
 export const BACKEND_URL = import.meta.env.VITE_API_URL 
   ? import.meta.env.VITE_API_URL.replace('/api', '') 
   : "http://localhost:3000";
 
 export const useBotStore = defineStore("bot", () => {
+  // ÁLLAPOTOK (STATE)
   const products = ref([])
   const cart = ref({})
   const token = ref(localStorage.getItem('token') || '') 
@@ -23,8 +24,10 @@ export const useBotStore = defineStore("bot", () => {
   const adminOrders = ref([]) 
   const toast = useToast()
   
+  // Backend API címe
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
 
+  // Axios alapértelmezett fejléc beállítása (ha van token)
   if (token.value) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
@@ -34,8 +37,10 @@ export const useBotStore = defineStore("bot", () => {
   const onlyInStock = ref(false)
   const sortOrder = ref('default')
 
-  // --- SZŰRT LISTA ---
+  // --- SZŰRT LISTA (COMPUTED) ---
   const filteredProducts = computed(() => {
+    if (!products.value) return [] // Biztonsági ellenőrzés
+
     let result = products.value.filter(p => {
       const term = searchQuery.value.toLowerCase()
       const matchesSearch = p.name.toLowerCase().includes(term) || 
@@ -58,8 +63,10 @@ export const useBotStore = defineStore("bot", () => {
       const response = await axios.post(`${API_URL}/auth/login`, { email, password })
       token.value = response.data.token
       user.value = response.data.user
+      
       localStorage.setItem('token', token.value)
       localStorage.setItem('user', JSON.stringify(user.value))
+      
       axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
       toast.success("Sikeres bejelentkezés!")
       router.push('/')
@@ -92,17 +99,25 @@ export const useBotStore = defineStore("bot", () => {
   const loadAll = async () => {
     try {
       const response = await axios.get(`${API_URL}/products`)
-      products.value = response.data
+      products.value = response.data || [] // Ha nincs adat, üres tömb
       
       const savedCart = localStorage.getItem("cart")
       if (savedCart) {
-        cart.value = JSON.parse(savedCart)
-      }
-      for (const id in cart.value) {
-        const product = products.value.find((p) => p.id == id)
-        if (product) {
-          product.store -= cart.value[id]
+        try {
+            cart.value = JSON.parse(savedCart)
+        } catch(e) {
+            cart.value = {} // Ha hibás a JSON, üres kosár
         }
+      }
+      
+      // Készlet frissítés
+      if (cart.value && products.value.length > 0) {
+          for (const id in cart.value) {
+            const product = products.value.find((p) => p.id == id || p._id == id)
+            if (product) {
+              product.store -= cart.value[id]
+            }
+          }
       }
     } catch (error) {
       console.error(error)
@@ -134,27 +149,34 @@ export const useBotStore = defineStore("bot", () => {
 
   // --- KOSÁR FUNKCIÓK ---
   const addToCart = (id) => {
-    const product = products.value.find((p) => p.id == id)
+    const product = products.value.find((p) => p.id == id || p._id == id)
     if (!product) { toast.error("A termék nem elérhető!"); return }
     if (product.store === 0) { toast.error("Nincs készleten"); return; }
+    
+    // Biztosítjuk, hogy a cart.value létezik
+    if (!cart.value) cart.value = {}
+    
     cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
     product.store--
+    
     localStorage.setItem("cart", JSON.stringify(cart.value))
     toast("Kosárhoz adva", { icon: h(OhVueIcon, { name: "bi-bag-check-fill", class: "font-size: 2rem", animation: "wrench" }) });
   };
 
   const countTotal = () => {
     let total = 0
+    if (!cart.value) return 0
     for (const i in cart.value) {
-      const p = products.value.find((p) => p.id == i)
+      const p = products.value.find((p) => p.id == i || p._id == i)
       if(p) total += cart.value[i] * p.price
     }
     return total
   }
 
   const emptyCart = () => {
+    if (!cart.value) return
     for (const key in cart.value) {
-        const p = products.value.find((p) => p.id == key)
+        const p = products.value.find((p) => p.id == key || p._id == key)
         if(p) p.store += cart.value[key]
     }
     cart.value = {}
@@ -162,16 +184,17 @@ export const useBotStore = defineStore("bot", () => {
   };
 
   const deleteProductFromCart = (id) => {
-    const product = products.value.find((p) => p.id == id)
+    const product = products.value.find((p) => p.id == id || p._id == id)
     if (product) { product.store += cart.value[id] }
     delete cart.value[id]
     toast.error("Termék törölve a kosárból!")
   }
 
   const modifyQuantity = (id, op) => {
-    if (!cart.value[id]) return 
-    const product = products.value.find((p) => p.id == id)
+    if (!cart.value || !cart.value[id]) return 
+    const product = products.value.find((p) => p.id == id || p._id == id)
     if (!product) return
+
     if (op === "+") {
       if (cart.value[id] < product.store + cart.value[id]) {
         cart.value[id]++
@@ -202,7 +225,7 @@ export const useBotStore = defineStore("bot", () => {
     }
     const orderItems = [];
     for (const id in cart.value) {
-      const product = products.value.find((p) => p.id == id);
+      const product = products.value.find((p) => p.id == id || p._id == id);
       if (product) {
         orderItems.push({
           productId: id,

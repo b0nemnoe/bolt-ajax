@@ -6,10 +6,13 @@ import { useBotStore } from '@/stores/bot.js'
 const botStore = useBotStore()
 
 onMounted(() => {
-  botStore.loadAll()
+  if (botStore.loadAll) {
+    botStore.loadAll()
+  }
 })
 
 const cartItemCount = computed(() => {
+  if (!botStore.cart) return 0
   return Object.values(botStore.cart).reduce((acc, qty) => acc + qty, 0)
 })
 </script>
@@ -26,7 +29,6 @@ const cartItemCount = computed(() => {
       </button>
 
       <div class="collapse navbar-collapse" id="mainMenu">
-        
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
             <RouterLink class="nav-link" to="/" active-class="active">Termékek</RouterLink>
@@ -62,7 +64,7 @@ const cartItemCount = computed(() => {
 
           <li class="nav-item dropdown" v-else>
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              👤 {{ botStore.user?.email.split('@')[0] }}
+              👤 {{ botStore.user?.email ? botStore.user.email.split('@')[0] : 'Felhasználó' }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end fade-down">
               <li><RouterLink class="dropdown-item" to="/profile">📜 Rendeléseim</RouterLink></li>
@@ -89,55 +91,37 @@ const cartItemCount = computed(() => {
 .custom-navbar {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
-
 .navbar-brand {
   font-size: 1.5rem;
   letter-spacing: 1px;
 }
-
 .nav-link {
   font-weight: 500;
   transition: all 0.3s;
 }
-
 .nav-link:hover, .nav-link.active {
   color: #fff !important;
   transform: translateY(-2px);
   text-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
-
 .admin-badge {
   background-color: rgba(255, 255, 255, 0.1);
   border-radius: 20px;
   padding: 5px 15px !important;
 }
-
-
 .fade-down {
   animation: fadeInDown 0.3s ease;
 }
-
 @keyframes fadeInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
-
-.fade-enter-active,
-.fade-leave-active {
+.fade-enter-active, .fade-leave-active {
   transition: opacity 0.3s ease;
 }
-
-.fade-enter-from,
-.fade-leave-to {
+.fade-enter-from, .fade-leave-to {
   opacity: 0;
 }
-
 .main-content {
   min-height: 80vh;
 }
