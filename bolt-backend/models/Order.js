@@ -1,6 +1,24 @@
 const mongoose = require('mongoose');
 
 const OrderSchema = new mongoose.Schema({
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        required: true
+    },
+    
+    items: [
+        {
+            productId: { type: String, required: true },
+            name: { type: String, required: true },
+            quantity: { type: Number, required: true },
+            price: { type: Number, required: true }
+        }
+    ],
+    totalPrice: {
+        type: Number,
+        required: true
+    },
     status: {
         type: String,
         default: 'Feldolgozás alatt',
@@ -12,6 +30,4 @@ const OrderSchema = new mongoose.Schema({
     }
 });
 
-
-
-module.exports = mongoose.model('Order', OrderSchema);
+module.exports = mongoose.models.Order || mongoose.model('Order', OrderSchema);
