@@ -267,6 +267,29 @@ export const useBotStore = defineStore("bot", () => {
       return [...result].sort((a, b) => b.price - a.price)
     }
 
+  const adminOrders = ref([]) // <--- ÚJ
+
+  const fetchAdminOrders = async () => {
+    if (!token.value || !user.value?.isAdmin) return
+    try {
+      const response = await axios.get(`${API_URL}/orders/all`)
+      adminOrders.value = response.data
+    } catch (error) {
+      toast.error("Hiba a rendelések betöltésekor")
+    }
+  }
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await axios.patch(`${API_URL}/orders/${orderId}`, { status: newStatus })
+      toast.success("Státusz frissítve!")
+      const order = adminOrders.value.find(o => o._id === orderId)
+      if (order) order.status = newStatus
+    } catch (error) {
+      toast.error("Hiba a módosításkor")
+    }
+  }
+
     return result
   })
 
@@ -281,6 +304,9 @@ export const useBotStore = defineStore("bot", () => {
     searchQuery,
     onlyInStock,
     sortOrder,
+    adminOrders,
+    fetchAdminOrders,
+    updateOrderStatus,
     loadAll,
     addToCart,
     saveProduct,

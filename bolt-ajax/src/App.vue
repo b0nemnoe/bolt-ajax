@@ -9,7 +9,6 @@ onMounted(() => {
   botStore.loadAll()
 })
 
-// 🔹 Kosárban lévő összes termék kiszámítása
 const cartItemCount = computed(() => {
   return Object.values(botStore.cart).reduce((acc, qty) => acc + qty, 0)
 })
@@ -34,6 +33,12 @@ const cartItemCount = computed(() => {
       <template v-if="botStore.token">
         <RouterLink class="btn btn-outline-primary m-2" to="/profile">Profil</RouterLink>
         </template>
+      
+      <template v-if="botStore.user && botStore.user.isAdmin">
+        <RouterLink class="btn btn-outline-dark m-2" to="/admin-orders">📦 Rendelések</RouterLink> <RouterLink class="btn btn-outline-warning m-2" to="/new">Új termék</RouterLink>
+        <RouterLink class="btn btn-outline-danger m-2" to="/delete">Termék törlése</RouterLink>
+      </template>
+      
     </nav>
     <RouterView />
   </div>

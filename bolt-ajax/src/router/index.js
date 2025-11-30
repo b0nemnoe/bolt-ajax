@@ -5,6 +5,7 @@ import NewProductView from '../views/NewProductView.vue'
 import CartView from '../views/CartView.vue'
 import DeleteProductView from '../views/DeleteProductView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import AdminOrdersView from '../views/AdminOrdersView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -14,8 +15,8 @@ const router = createRouter({
     { path: '/delete', name: 'delete', component: DeleteProductView, meta: { requiresAuth: true, requiresAdmin: true }},
     { path: '/new', name: 'new', component: NewProductView, meta: { requiresAuth: true, requiresAdmin: true }},
     { path: '/login', name: 'login', component: LoginView },
-    { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true }
-    },
+    { path: '/profile', name: 'profile', component: ProfileView, meta: { requiresAuth: true }},
+    { path: '/admin-orders', name: 'admin-orders', component: AdminOrdersView,meta: { requiresAuth: true, requiresAdmin: true }},
   ],
 })
 
