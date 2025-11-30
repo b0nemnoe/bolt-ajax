@@ -6,7 +6,8 @@ import { useBotStore } from '@/stores/bot.js'
 const botStore = useBotStore()
 
 onMounted(() => {
-  if (botStore.loadAll) {
+  // Biztonsági ellenőrzés
+  if (botStore && typeof botStore.loadAll === 'function') {
     botStore.loadAll()
   }
 })
@@ -37,6 +38,7 @@ const cartItemCount = computed(() => {
 
         <ul class="navbar-nav ms-auto align-items-center">
           
+          <!-- Admin Dropdown -->
           <li class="nav-item dropdown me-3" v-if="botStore.user && botStore.user.isAdmin">
             <a class="nav-link dropdown-toggle admin-badge" href="#" role="button" data-bs-toggle="dropdown">
               Adminisztráció
@@ -45,10 +47,11 @@ const cartItemCount = computed(() => {
               <li><RouterLink class="dropdown-item" to="/admin-orders">📦 Rendelések kezelése</RouterLink></li>
               <li><RouterLink class="dropdown-item" to="/new">➕ Új termék</RouterLink></li>
               <li><hr class="dropdown-divider"></li>
-              <li><RouterLink class="dropdown-item text-danger" to="/delete">🗑️ Termék törlése</RouterLink></li>
+              <li><RouterLink class="dropdown-item text-warning" to="/delete">✏️ Termék módosítás</RouterLink></li>
             </ul>
           </li>
 
+          <!-- Kosár -->
           <li class="nav-item me-3">
             <RouterLink class="nav-link position-relative" to="/cart" active-class="active">
               Kosár &#128722;
@@ -58,13 +61,14 @@ const cartItemCount = computed(() => {
             </RouterLink>
           </li>
 
+          <!-- Felhasználó -->
           <li class="nav-item" v-if="!botStore.token">
             <RouterLink class="btn btn-light btn-sm fw-bold text-primary" to="/login">Bejelentkezés</RouterLink>
           </li>
 
           <li class="nav-item dropdown" v-else>
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              👤 {{ botStore.user?.email ? botStore.user.email.split('@')[0] : 'Felhasználó' }}
+              👤 {{ botStore.user?.email ? botStore.user.email.split('@')[0] : 'Fiókom' }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end fade-down">
               <li><RouterLink class="dropdown-item" to="/profile">📜 Rendeléseim</RouterLink></li>
@@ -78,12 +82,9 @@ const cartItemCount = computed(() => {
     </div>
   </nav>
 
+  <!-- TARTALOM - Animáció nélkül a stabilitásért -->
   <div class="container main-content">
-    <RouterView v-slot="{ Component }">
-      <transition name="fade" mode="out-in">
-        <component :is="Component" />
-      </transition>
-    </RouterView>
+    <RouterView />
   </div>
 </template>
 
@@ -115,12 +116,6 @@ const cartItemCount = computed(() => {
 @keyframes fadeInDown {
   from { opacity: 0; transform: translateY(-10px); }
   to { opacity: 1; transform: translateY(0); }
-}
-.fade-enter-active, .fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from, .fade-leave-to {
-  opacity: 0;
 }
 .main-content {
   min-height: 80vh;

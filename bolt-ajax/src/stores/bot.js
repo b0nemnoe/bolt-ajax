@@ -24,22 +24,19 @@ export const useBotStore = defineStore("bot", () => {
   const adminOrders = ref([]) 
   const toast = useToast()
   
-  // Backend API címe
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
 
-  // Axios alapértelmezett fejléc beállítása (ha van token)
   if (token.value) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
 
-  // --- KERESÉS ÉS SZŰRÉS STATE ---
+
   const searchQuery = ref('')
   const onlyInStock = ref(false)
   const sortOrder = ref('default')
 
-  // --- SZŰRT LISTA (COMPUTED) ---
   const filteredProducts = computed(() => {
-    if (!products.value) return [] // Biztonsági ellenőrzés
+    if (!products.value) return [] 
 
     let result = products.value.filter(p => {
       const term = searchQuery.value.toLowerCase()
@@ -57,7 +54,6 @@ export const useBotStore = defineStore("bot", () => {
     return result
   })
 
-  // --- HITELESÍTÉS ---
   const login = async (email, password) => {
     try {
       const response = await axios.post(`${API_URL}/auth/login`, { email, password })
@@ -69,7 +65,13 @@ export const useBotStore = defineStore("bot", () => {
       
       axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
       toast.success("Sikeres bejelentkezés!")
-      router.push('/')
+      
+      if (user.value.isAdmin) {
+        router.push('/admin-orders')
+      } else {
+        router.push('/') 
+      }
+
     } catch (error) {
       toast.error(error.response?.data?.message || "Hibás bejelentkezés!")
     }
@@ -95,22 +97,20 @@ export const useBotStore = defineStore("bot", () => {
     router.push('/login')
   }
 
-  // --- ADATOK BETÖLTÉSE ---
   const loadAll = async () => {
     try {
       const response = await axios.get(`${API_URL}/products`)
-      products.value = response.data || [] // Ha nincs adat, üres tömb
+      products.value = response.data || []
       
       const savedCart = localStorage.getItem("cart")
       if (savedCart) {
         try {
             cart.value = JSON.parse(savedCart)
         } catch(e) {
-            cart.value = {} // Ha hibás a JSON, üres kosár
+            cart.value = {}
         }
       }
       
-      // Készlet frissítés
       if (cart.value && products.value.length > 0) {
           for (const id in cart.value) {
             const product = products.value.find((p) => p.id == id || p._id == id)
@@ -125,7 +125,6 @@ export const useBotStore = defineStore("bot", () => {
     }
   };
 
-  // --- ADMIN DASHBOARD ---
   const fetchAdminOrders = async () => {
     if (!token.value || !user.value?.isAdmin) return
     try {
@@ -147,13 +146,11 @@ export const useBotStore = defineStore("bot", () => {
     }
   }
 
-  // --- KOSÁR FUNKCIÓK ---
   const addToCart = (id) => {
     const product = products.value.find((p) => p.id == id || p._id == id)
     if (!product) { toast.error("A termék nem elérhető!"); return }
     if (product.store === 0) { toast.error("Nincs készleten"); return; }
     
-    // Biztosítjuk, hogy a cart.value létezik
     if (!cart.value) cart.value = {}
     
     cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
@@ -216,7 +213,6 @@ export const useBotStore = defineStore("bot", () => {
     localStorage.setItem("cart", JSON.stringify(cart.value))
   }
 
-  // --- RENDELÉS ---
   const checkout = async () => {
     if (!token.value) {
       toast.error("A rendeléshez be kell jelentkezned!");
@@ -265,7 +261,6 @@ export const useBotStore = defineStore("bot", () => {
     }
   }
 
-  // --- ADMIN MŰVELETEK (TERMÉKEK) ---
   const saveProduct = (p) => {
     axios.post(`${API_URL}/products`, p)
       .then((resp) => {
@@ -305,6 +300,7 @@ export const useBotStore = defineStore("bot", () => {
       .catch(() => toast.error("Hiba a törléskor"))
   }
 
+  // Watcher
   watch(cart, (newCart) => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
