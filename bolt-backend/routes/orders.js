@@ -4,6 +4,7 @@ const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
+const User = require('../models/User');
 
 router.post('/', auth, async (req, res) => {
     const { items, totalPrice } = req.body;
