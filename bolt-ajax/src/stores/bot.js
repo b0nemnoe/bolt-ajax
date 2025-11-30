@@ -245,13 +245,39 @@ export const useBotStore = defineStore("bot", () => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
 
+
+  const searchQuery = ref('')
+  const onlyInStock = ref(false)
+  const sortOrder = ref('default')
+
+  const filteredProducts = computed(() => {
+    let result = products.value.filter(p => {
+      const term = searchQuery.value.toLowerCase()
+      const matchesSearch = p.name.toLowerCase().includes(term) || 
+                            (p.desc && p.desc.toLowerCase().includes(term))
+      
+      const matchesStock = onlyInStock.value ? p.store > 0 : true
+
+      return matchesSearch && matchesStock
+    })
+
+    if (sortOrder.value === 'asc') {
+      return [...result].sort((a, b) => a.price - b.price)
+    } else if (sortOrder.value === 'desc') {
+      return [...result].sort((a, b) => b.price - a.price)
+    }
+
+    return result
+  })
+
   return {
     products,
     cart,
     token,
     user,
     myOrders,
-    toast, // Ezt is exportáljuk, mert a view használja
+    toast,
+    filteredProducts,
     loadAll,
     addToCart,
     saveProduct,
