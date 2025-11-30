@@ -9,6 +9,7 @@ import router from '../router'
 
 addIcons(BiBagCheckFill);
 
+// Dinamikus backend URL exportálása
 export const BACKEND_URL = import.meta.env.VITE_API_URL 
   ? import.meta.env.VITE_API_URL.replace('/api', '') 
   : "http://localhost:3000";
@@ -18,16 +19,38 @@ export const useBotStore = defineStore("bot", () => {
   const cart = ref({})
   const token = ref(localStorage.getItem('token') || '') 
   const user = ref(JSON.parse(localStorage.getItem('user')) || null) 
-  const myOrders = ref([]) 
+  const myOrders = ref([])
+  const adminOrders = ref([]) // <--- EZ HIÁNYZOTT!
   const toast = useToast()
   
-  // Dinamikus API URL
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
 
-  // Token beállítása
   if (token.value) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
+
+  // --- KERESÉS ÉS SZŰRÉS STATE ---
+  const searchQuery = ref('')
+  const onlyInStock = ref(false)
+  const sortOrder = ref('default')
+
+  // --- SZŰRT LISTA (COMPUTED) ---
+  const filteredProducts = computed(() => {
+    let result = products.value.filter(p => {
+      const term = searchQuery.value.toLowerCase()
+      const matchesSearch = p.name.toLowerCase().includes(term) || 
+                            (p.desc && p.desc.toLowerCase().includes(term))
+      const matchesStock = onlyInStock.value ? p.store > 0 : true
+      return matchesSearch && matchesStock
+    })
+
+    if (sortOrder.value === 'asc') {
+      return [...result].sort((a, b) => a.price - b.price)
+    } else if (sortOrder.value === 'desc') {
+      return [...result].sort((a, b) => b.price - a.price)
+    }
+    return result
+  })
 
   // --- HITELESÍTÉS ---
   const login = async (email, password) => {
@@ -65,7 +88,7 @@ export const useBotStore = defineStore("bot", () => {
     router.push('/login')
   }
 
-  // --- TERMÉKEK ---
+  // --- ADATOK BETÖLTÉSE ---
   const loadAll = async () => {
     try {
       const response = await axios.get(`${API_URL}/products`)
@@ -87,15 +110,35 @@ export const useBotStore = defineStore("bot", () => {
     }
   };
 
-  // --- KOSÁR ---
+  // --- ADMIN DASHBOARD (RENDELÉSEK) --- EZ HIÁNYZOTT! ---
+  const fetchAdminOrders = async () => {
+    if (!token.value || !user.value?.isAdmin) return
+    try {
+      const response = await axios.get(`${API_URL}/orders/all`)
+      adminOrders.value = response.data
+    } catch (error) {
+      toast.error("Hiba a rendelések betöltésekor")
+    }
+  }
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await axios.patch(`${API_URL}/orders/${orderId}`, { status: newStatus })
+      toast.success("Státusz frissítve!")
+      const order = adminOrders.value.find(o => o._id === orderId)
+      if (order) order.status = newStatus
+    } catch (error) {
+      toast.error("Hiba a módosításkor")
+    }
+  }
+
+  // --- KOSÁR FUNKCIÓK ---
   const addToCart = (id) => {
     const product = products.value.find((p) => p.id == id)
     if (!product) { toast.error("A termék nem elérhető!"); return }
     if (product.store === 0) { toast.error("Nincs készleten"); return; }
-    
     cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
     product.store--
-    
     localStorage.setItem("cart", JSON.stringify(cart.value))
     toast("Kosárhoz adva", { icon: h(OhVueIcon, { name: "bi-bag-check-fill", class: "font-size: 2rem", animation: "wrench" }) });
   };
@@ -129,7 +172,6 @@ export const useBotStore = defineStore("bot", () => {
     if (!cart.value[id]) return 
     const product = products.value.find((p) => p.id == id)
     if (!product) return
-
     if (op === "+") {
       if (cart.value[id] < product.store + cart.value[id]) {
         cart.value[id]++
@@ -200,7 +242,7 @@ export const useBotStore = defineStore("bot", () => {
     }
   }
 
-  // --- ADMIN MŰVELETEK ---
+  // --- ADMIN MŰVELETEK (TERMÉKEK) ---
   const saveProduct = (p) => {
     axios.post(`${API_URL}/products`, p)
       .then((resp) => {
@@ -211,9 +253,8 @@ export const useBotStore = defineStore("bot", () => {
       .catch((err) => toast.error("Hiba: " + (err.response?.data?.message || err.message)));
   };
 
-  // Ez az új szerkesztés függvény!
   const updateProduct = (product) => {
-    axios.put(`${API_URL}/products/${product.id}`, product) // <--- Itt javítottam az URL-t is
+    axios.put(`${API_URL}/products/${product.id}`, product)
       .then(() => {
         const index = products.value.findIndex(p => p.id === product.id)
         if (index !== -1) {
@@ -245,68 +286,18 @@ export const useBotStore = defineStore("bot", () => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
 
-
-  const searchQuery = ref('')
-  const onlyInStock = ref(false)
-  const sortOrder = ref('default')
-
-  const filteredProducts = computed(() => {
-    let result = products.value.filter(p => {
-      const term = searchQuery.value.toLowerCase()
-      const matchesSearch = p.name.toLowerCase().includes(term) || 
-                            (p.desc && p.desc.toLowerCase().includes(term))
-      
-      const matchesStock = onlyInStock.value ? p.store > 0 : true
-
-      return matchesSearch && matchesStock
-    })
-
-    if (sortOrder.value === 'asc') {
-      return [...result].sort((a, b) => a.price - b.price)
-    } else if (sortOrder.value === 'desc') {
-      return [...result].sort((a, b) => b.price - a.price)
-    }
-
-  const adminOrders = ref([]) // <--- ÚJ
-
-  const fetchAdminOrders = async () => {
-    if (!token.value || !user.value?.isAdmin) return
-    try {
-      const response = await axios.get(`${API_URL}/orders/all`)
-      adminOrders.value = response.data
-    } catch (error) {
-      toast.error("Hiba a rendelések betöltésekor")
-    }
-  }
-
-  const updateOrderStatus = async (orderId, newStatus) => {
-    try {
-      await axios.patch(`${API_URL}/orders/${orderId}`, { status: newStatus })
-      toast.success("Státusz frissítve!")
-      const order = adminOrders.value.find(o => o._id === orderId)
-      if (order) order.status = newStatus
-    } catch (error) {
-      toast.error("Hiba a módosításkor")
-    }
-  }
-
-    return result
-  })
-
   return {
     products,
-    cart,
-    token,
-    user,
-    myOrders,
-    toast,
     filteredProducts,
     searchQuery,
     onlyInStock,
     sortOrder,
+    cart,
+    token,
+    user,
+    myOrders,
     adminOrders,
-    fetchAdminOrders,
-    updateOrderStatus,
+    toast,
     loadAll,
     addToCart,
     saveProduct,
@@ -320,6 +311,8 @@ export const useBotStore = defineStore("bot", () => {
     register,
     logout,
     checkout,
-    fetchOrders
+    fetchOrders,
+    fetchAdminOrders,
+    updateOrderStatus
   }
 })
