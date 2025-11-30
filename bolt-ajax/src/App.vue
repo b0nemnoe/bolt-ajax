@@ -15,31 +15,130 @@ const cartItemCount = computed(() => {
 </script>
 
 <template>
-  <div class="container">
-    <nav class="text-center my-4">
-      <RouterLink class="btn btn-outline-info m-2" to="/">Termékek</RouterLink>
-      
-      <template v-if="botStore.user && botStore.user.isAdmin">
-        <RouterLink class="btn btn-outline-warning m-2" to="/new">Új termék</RouterLink>
-        <RouterLink class="btn btn-outline-secondary m-2" to="/delete">Termékek kezelése</RouterLink>
-      </template>
-
-      <RouterLink class="btn btn-outline-success m-2" to="/cart">
-        Kosár <span v-if="cartItemCount > 0">({{ cartItemCount }})</span>
+  <nav class="navbar navbar-expand-lg navbar-dark custom-navbar sticky-top shadow-sm mb-4">
+    <div class="container">
+      <RouterLink class="navbar-brand fw-bold fst-italic" to="/">
+        🛍️ SuperShop
       </RouterLink>
 
-      <button v-if="botStore.token" @click="botStore.logout" class="btn btn-dark m-2">Kijelentkezés</button>
-      <RouterLink v-else class="btn btn-primary m-2" to="/login">Bejelentkezés</RouterLink>
-      <template v-if="botStore.token">
-        <RouterLink class="btn btn-outline-primary m-2" to="/profile">Profil</RouterLink>
-        </template>
-      
-      <template v-if="botStore.user && botStore.user.isAdmin">
-        <RouterLink class="btn btn-outline-dark m-2" to="/admin-orders">📦 Rendelések</RouterLink> <RouterLink class="btn btn-outline-warning m-2" to="/new">Új termék</RouterLink>
-        <RouterLink class="btn btn-outline-danger m-2" to="/delete">Termék törlése</RouterLink>
-      </template>
-      
-    </nav>
-    <RouterView />
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="collapse navbar-collapse" id="mainMenu">
+        
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          <li class="nav-item">
+            <RouterLink class="nav-link" to="/" active-class="active">Termékek</RouterLink>
+          </li>
+        </ul>
+
+        <ul class="navbar-nav ms-auto align-items-center">
+          
+          <li class="nav-item dropdown me-3" v-if="botStore.user && botStore.user.isAdmin">
+            <a class="nav-link dropdown-toggle admin-badge" href="#" role="button" data-bs-toggle="dropdown">
+              Adminisztráció
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end fade-down">
+              <li><RouterLink class="dropdown-item" to="/admin-orders">📦 Rendelések kezelése</RouterLink></li>
+              <li><RouterLink class="dropdown-item" to="/new">➕ Új termék</RouterLink></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><RouterLink class="dropdown-item text-danger" to="/delete">🗑️ Termék törlése</RouterLink></li>
+            </ul>
+          </li>
+
+          <li class="nav-item me-3">
+            <RouterLink class="nav-link position-relative" to="/cart" active-class="active">
+              Kosár &#128722;
+              <span v-if="cartItemCount > 0" class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                {{ cartItemCount }}
+              </span>
+            </RouterLink>
+          </li>
+
+          <li class="nav-item" v-if="!botStore.token">
+            <RouterLink class="btn btn-light btn-sm fw-bold text-primary" to="/login">Bejelentkezés</RouterLink>
+          </li>
+
+          <li class="nav-item dropdown" v-else>
+            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+              👤 {{ botStore.user?.email.split('@')[0] }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end fade-down">
+              <li><RouterLink class="dropdown-item" to="/profile">📜 Rendeléseim</RouterLink></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button @click="botStore.logout" class="dropdown-item text-danger">Kijelentkezés</button></li>
+            </ul>
+          </li>
+
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container main-content">
+    <RouterView v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" />
+      </transition>
+    </RouterView>
   </div>
 </template>
+
+<style scoped>
+.custom-navbar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.navbar-brand {
+  font-size: 1.5rem;
+  letter-spacing: 1px;
+}
+
+.nav-link {
+  font-weight: 500;
+  transition: all 0.3s;
+}
+
+.nav-link:hover, .nav-link.active {
+  color: #fff !important;
+  transform: translateY(-2px);
+  text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.admin-badge {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 5px 15px !important;
+}
+
+
+.fade-down {
+  animation: fadeInDown 0.3s ease;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+.main-content {
+  min-height: 80vh;
+}
+</style>

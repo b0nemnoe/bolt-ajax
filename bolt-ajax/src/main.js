@@ -1,4 +1,5 @@
 import '../node_modules/bootstrap/dist/css/bootstrap.min.css'
+import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import "vue-toastification/dist/index.css";
 
 import { OhVueIcon, addIcons } from "oh-vue-icons";
