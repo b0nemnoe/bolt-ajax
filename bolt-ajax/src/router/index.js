@@ -6,6 +6,7 @@ import NewProductView from '../views/NewProductView.vue'
 import DeleteProductView from '../views/DeleteProductView.vue'
 import CartView from '../views/CartView.vue'
 import AdminOrdersView from '../views/AdminOrdersView.vue'
+import ProductDetailsView from '../views/ProductDetailsView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -48,7 +49,12 @@ const router = createRouter({
       name: 'admin-orders',
       component: AdminOrdersView,
       meta: { requiresAuth: true, requiresAdmin: true }
-    }
+    },
+    {
+      path: '/product/:id',
+      name: 'product-details',
+      component: ProductDetailsView
+    },
   ],
 })
 

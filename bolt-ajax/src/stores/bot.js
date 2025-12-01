@@ -1,4 +1,4 @@
-import { ref, watch, onMounted, computed } from "vue"
+import { ref, watch, computed } from "vue"
 import { defineStore } from "pinia"
 import axios from "axios"
 import { useToast } from "vue-toastification"
@@ -9,35 +9,32 @@ import router from '../router'
 
 addIcons(BiBagCheckFill);
 
-// Dinamikus backend URL exportálása (hogy más fájlok is elérjék)
 export const BACKEND_URL = import.meta.env.VITE_API_URL 
   ? import.meta.env.VITE_API_URL.replace('/api', '') 
   : "http://localhost:3000";
 
 export const useBotStore = defineStore("bot", () => {
-  // ÁLLAPOTOK (STATE)
   const products = ref([])
   const cart = ref({})
   const token = ref(localStorage.getItem('token') || '') 
   const user = ref(JSON.parse(localStorage.getItem('user')) || null) 
   const myOrders = ref([])
   const adminOrders = ref([]) 
+  const isLoading = ref(false) 
   const toast = useToast()
-  
+  const currentProduct = ref(null)
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
 
   if (token.value) {
     axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
   }
 
-
   const searchQuery = ref('')
   const onlyInStock = ref(false)
   const sortOrder = ref('default')
 
   const filteredProducts = computed(() => {
-    if (!products.value) return [] 
-
+    if (!products.value) return []
     let result = products.value.filter(p => {
       const term = searchQuery.value.toLowerCase()
       const matchesSearch = p.name.toLowerCase().includes(term) || 
@@ -45,12 +42,8 @@ export const useBotStore = defineStore("bot", () => {
       const matchesStock = onlyInStock.value ? p.store > 0 : true
       return matchesSearch && matchesStock
     })
-
-    if (sortOrder.value === 'asc') {
-      return [...result].sort((a, b) => a.price - b.price)
-    } else if (sortOrder.value === 'desc') {
-      return [...result].sort((a, b) => b.price - a.price)
-    }
+    if (sortOrder.value === 'asc') return [...result].sort((a, b) => a.price - b.price)
+    if (sortOrder.value === 'desc') return [...result].sort((a, b) => b.price - a.price)
     return result
   })
 
@@ -59,19 +52,12 @@ export const useBotStore = defineStore("bot", () => {
       const response = await axios.post(`${API_URL}/auth/login`, { email, password })
       token.value = response.data.token
       user.value = response.data.user
-      
       localStorage.setItem('token', token.value)
       localStorage.setItem('user', JSON.stringify(user.value))
-      
       axios.defaults.headers.common['Authorization'] = `Bearer ${token.value}`
       toast.success("Sikeres bejelentkezés!")
-      
-      if (user.value.isAdmin) {
-        router.push('/admin-orders')
-      } else {
-        router.push('/') 
-      }
-
+      if (user.value.isAdmin) router.push('/admin-orders')
+      else router.push('/')
     } catch (error) {
       toast.error(error.response?.data?.message || "Hibás bejelentkezés!")
     }
@@ -80,7 +66,7 @@ export const useBotStore = defineStore("bot", () => {
   const register = async (email, password) => {
     try {
       await axios.post(`${API_URL}/auth/register`, { email, password })
-      toast.success("Sikeres regisztráció! Most jelentkezz be.")
+      toast.success("Sikeres regisztráció!")
       router.push('/login')
     } catch (error) {
       toast.error(error.response?.data?.message || "Hiba történt!")
@@ -98,30 +84,25 @@ export const useBotStore = defineStore("bot", () => {
   }
 
   const loadAll = async () => {
+    isLoading.value = true;
     try {
       const response = await axios.get(`${API_URL}/products`)
       products.value = response.data || []
-      
       const savedCart = localStorage.getItem("cart")
       if (savedCart) {
-        try {
-            cart.value = JSON.parse(savedCart)
-        } catch(e) {
-            cart.value = {}
-        }
+        try { cart.value = JSON.parse(savedCart) } catch(e) { cart.value = {} }
       }
-      
       if (cart.value && products.value.length > 0) {
           for (const id in cart.value) {
             const product = products.value.find((p) => p.id == id || p._id == id)
-            if (product) {
-              product.store -= cart.value[id]
-            }
+            if (product) product.store -= cart.value[id]
           }
       }
     } catch (error) {
       console.error(error)
       toast.error("Nem sikerült betölteni a termékeket!")
+    } finally {
+      isLoading.value = false;
     }
   };
 
@@ -146,16 +127,28 @@ export const useBotStore = defineStore("bot", () => {
     }
   }
 
+  const fetchProductById = async (id) => {
+    isLoading.value = true
+    currentProduct.value = null
+    try {
+      const response = await axios.get(`${API_URL}/products/${id}`)
+      currentProduct.value = response.data
+    } catch (error) {
+      console.error(error)
+      toast.error("Nem sikerült betölteni a terméket!")
+      router.push('/')
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   const addToCart = (id) => {
     const product = products.value.find((p) => p.id == id || p._id == id)
     if (!product) { toast.error("A termék nem elérhető!"); return }
     if (product.store === 0) { toast.error("Nincs készleten"); return; }
-    
     if (!cart.value) cart.value = {}
-    
     cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
     product.store--
-    
     localStorage.setItem("cart", JSON.stringify(cart.value))
     toast("Kosárhoz adva", { icon: h(OhVueIcon, { name: "bi-bag-check-fill", class: "font-size: 2rem", animation: "wrench" }) });
   };
@@ -191,7 +184,6 @@ export const useBotStore = defineStore("bot", () => {
     if (!cart.value || !cart.value[id]) return 
     const product = products.value.find((p) => p.id == id || p._id == id)
     if (!product) return
-
     if (op === "+") {
       if (cart.value[id] < product.store + cart.value[id]) {
         cart.value[id]++
@@ -300,38 +292,39 @@ export const useBotStore = defineStore("bot", () => {
       .catch(() => toast.error("Hiba a törléskor"))
   }
 
-  // Watcher
   watch(cart, (newCart) => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
 
   return {
-    products,
-    filteredProducts,
-    searchQuery,
-    onlyInStock,
-    sortOrder,
-    cart,
-    token,
-    user,
-    myOrders,
+    products, 
+    filteredProducts, 
+    searchQuery, 
+    onlyInStock, 
+    sortOrder, 
+    cart, 
+    token, 
+    user, myOrders, 
     adminOrders,
     toast,
-    loadAll,
-    addToCart,
-    saveProduct,
-    updateProduct,
-    emptyCart,
-    countTotal,
-    deleteProductFromCart,
+    isLoading,
+    currentProduct,
+    loadAll, 
+    addToCart, 
+    saveProduct, 
+    updateProduct, 
+    emptyCart, 
+    countTotal, 
+    deleteProductFromCart, 
     modifyQuantity,
-    deleteProductFromDb,
-    login,
-    register,
-    logout,
-    checkout,
-    fetchOrders,
-    fetchAdminOrders,
-    updateOrderStatus
+    deleteProductFromDb, 
+    login, 
+    register, 
+    logout, 
+    checkout, 
+    fetchOrders, 
+    fetchAdminOrders, 
+    updateOrderStatus,
+    fetchProductById,
   }
 })

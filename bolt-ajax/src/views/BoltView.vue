@@ -12,10 +12,10 @@ const getImageUrl = (imageName) => {
 </script>
 
 <template>
-  <!-- KÜLSŐ DIV (EZ HIÁNYZOTT A TRANSITION MIATT!) -->
   <div class="bolt-view-container"> 
     <h1 class="mb-4 text-center">Termékek</h1>
 
+    <!-- KERESŐ SÁV -->
     <div class="card p-3 mb-4 shadow-sm bg-light">
       <div class="row g-3 align-items-center">
         <div class="col-md-6">
@@ -40,13 +40,28 @@ const getImageUrl = (imageName) => {
       </div>
     </div>
 
-    <div class="row gap-4 justify-content-center">
+    <div v-if="botStore.isLoading" class="text-center my-5">
+      <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+        <span class="visually-hidden">Töltés...</span>
+      </div>
+      <p class="mt-2 text-muted">Termékek betöltése...</p>
+    </div>
+
+    <div v-else class="row gap-4 justify-content-center">
+      
       <div v-if="botStore.filteredProducts.length === 0" class="alert alert-warning text-center w-75">
         Nincs találat. 😢
       </div>
 
       <div v-for="p in botStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm product-card">
-        <img :src="getImageUrl(p.image)" class="card-img-top" style="height: 200px; object-fit: cover;" alt="Termék kép">
+        <RouterLink :to="{ name: 'product-details', params: { id: p.id } }">
+        <img 
+          :src="getImageUrl(p.image)" 
+          class="card-img-top" 
+          style="height: 200px; object-fit: cover; cursor: pointer;"
+          alt="Termék kép"
+        >
+      </RouterLink>
         <div class="card-body d-flex flex-column">
           <h5 class="card-title">{{ p.name }}</h5>
           <p class="card-text text-muted small flex-grow-1">{{ p.desc }}</p>
@@ -65,7 +80,7 @@ const getImageUrl = (imageName) => {
         </div>
       </div>
     </div>
-  </div> <!-- KÜLSŐ DIV VÉGE -->
+  </div>
 </template>
 
 <style scoped>

@@ -5,7 +5,8 @@ const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
-console.log("--- A PRODUCTS.JS BETÖLTŐDÖTT: CLOUDINARY VERZIÓ ---");
+console.log("--- A PRODUCTS.JS BETÖLTŐDÖTT ---");
+
 // --- MIDDLEWARE-EK ---
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
@@ -29,10 +30,9 @@ const storage = new CloudinaryStorage({
 const upload = multer({ storage: storage });
 
 router.get('/', async (req, res) => {
-    console.log("--> GET /api/products hívás érkezett!"); // Jelez, ha bejön a kérés
+    console.log("--> GET /api/products hívás érkezett!");
     
     try {
-        // Ellenőrizzük, hogy a modell létezik-e
         if (!Product) {
             console.error("HIBA: A Product modell nincs betöltve!");
             throw new Error("A Product modell hiányzik");
@@ -53,31 +53,48 @@ router.get('/', async (req, res) => {
         }));
         res.json(transformed);
     } catch (err) {
-        // Itt íratjuk ki a hiba TELJES részleteit a konzolra
         console.error("!!! VÉGZETES HIBA A LEKÉRDEZÉSKOR !!!");
         console.error(err); 
         res.status(500).json({ message: err.message, stack: err.stack });
     }
 });
 
-// POST (Új termék) - EXTRA DEBUG VERZIÓ
+router.get('/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ message: 'A termék nem található' });
+        }
+        
+        const transformed = {
+            id: product._id,
+            name: product.name,
+            unit: product.unit,
+            desc: product.desc,
+            store: product.store,
+            price: product.price,
+            image: product.image
+        };
+        
+        res.json(transformed);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 router.post('/', [auth, admin], (req, res) => {
-    // Kézzel indítjuk a feltöltést, hogy elkaphassuk a hibáját
     const uploadMiddleware = upload.single('image');
 
     uploadMiddleware(req, res, async (err) => {
-        // 1. HA A FELTÖLTÉS HIBÁRA FUT (Cloudinary hiba itt lesz!)
         if (err) {
             console.error("!!! SÚLYOS HIBA A KÉPFELTÖLTÉSNÉL !!!");
-            console.error(JSON.stringify(err, null, 2)); // Kiírjuk a teljes hibát
+            console.error(JSON.stringify(err, null, 2));
             return res.status(500).json({ 
                 message: "Képfeltöltési hiba", 
                 error: err.message || "Ismeretlen Cloudinary hiba",
                 details: err
             });
         }
-
-        // 2. HA A FELTÖLTÉS SIKERES, MENTJÜK AZ ADATBÁZISBA
         try {
             console.log("--> Kép feltöltve, adatbázis mentés indul...");
             
@@ -107,8 +124,6 @@ router.post('/', [auth, admin], (req, res) => {
 
 router.put('/:id', [auth, admin], async (req, res) => {
     try {
-        // Megkeressük az ID alapján, és frissítjük a bejövő adatokkal (req.body)
-        // { new: true } -> Azt jelenti, hogy a már frissített adatot adja vissza
         const updatedProduct = await Product.findByIdAndUpdate(
             req.params.id,
             req.body,
