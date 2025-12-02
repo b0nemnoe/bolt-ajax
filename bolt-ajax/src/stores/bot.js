@@ -32,6 +32,45 @@ export const useBotStore = defineStore("bot", () => {
   const searchQuery = ref('')
   const onlyInStock = ref(false)
   const sortOrder = ref('default')
+  const selectedCategory = ref('all')
+  const wishlist = ref([])
+
+  const categories = computed(() => {
+    if (!products.value) return []
+    const cats = new Set(products.value.map(p => p.category).filter(c => c))
+    return ['all', ...cats]
+  })
+
+  const fetchWishlist = async () => {
+    if (!token.value) return
+    try {
+      const response = await axios.get(`${API_URL}/wishlist`)
+      wishlist.value = response.data
+    } catch (error) {
+      console.error("Hiba a kívánságlista betöltésekor:", error)
+    }
+  }
+
+  const toggleWishlist = async (productId) => {
+    if (!token.value) {
+        toast.warning("Jelentkezz be a funkció használatához!")
+        router.push('/login')
+        return
+    }
+    try {
+        const response = await axios.post(`${API_URL}/wishlist/toggle`, { productId })
+        if (response.data.added) {
+            const product = products.value.find(p => p.id == productId || p._id == productId)
+            if (product) wishlist.value.push(product)
+            toast.success("Hozzáadva a kedvencekhez ❤️")
+        } else {
+            wishlist.value = wishlist.value.filter(p => p._id !== productId && p.id !== productId)
+            toast.info("Eltávolítva a kedvencekből 💔")
+        }
+    } catch (error) {
+        toast.error("Hiba történt!")
+    }
+  }
 
   const filteredProducts = computed(() => {
     if (!products.value) return []
@@ -40,7 +79,11 @@ export const useBotStore = defineStore("bot", () => {
       const matchesSearch = p.name.toLowerCase().includes(term) || 
                             (p.desc && p.desc.toLowerCase().includes(term))
       const matchesStock = onlyInStock.value ? p.store > 0 : true
-      return matchesSearch && matchesStock
+      const matchesCategory = selectedCategory.value === 'all' || p.category === selectedCategory.value
+
+      return matchesSearch && matchesStock && matchesCategory
+
+
     })
     if (sortOrder.value === 'asc') return [...result].sort((a, b) => a.price - b.price)
     if (sortOrder.value === 'desc') return [...result].sort((a, b) => b.price - a.price)
@@ -58,6 +101,7 @@ export const useBotStore = defineStore("bot", () => {
       toast.success("Sikeres bejelentkezés!")
       if (user.value.isAdmin) router.push('/admin-orders')
       else router.push('/')
+      await fetchWishlist()
     } catch (error) {
       toast.error(error.response?.data?.message || "Hibás bejelentkezés!")
     }
@@ -79,11 +123,28 @@ export const useBotStore = defineStore("bot", () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
     delete axios.defaults.headers.common['Authorization']
-    toast.info("Kijelentkezve")
+    //toast.info("Kijelentkezve")
     router.push('/login')
+    wishlist.value = []
   }
 
+  axios.interceptors.response.use(
+    (response) => response,
+    (error) => {
+      if (error.response && error.response.status === 401) {
+        if (token.value) {
+            logout()
+            toast.error("A munkamenet lejárt. Kérjük, jelentkezz be újra!")
+        }
+      }
+      return Promise.reject(error)
+    }
+  )
+
   const loadAll = async () => {
+    if (token.value) {
+          await fetchWishlist()
+      }
     isLoading.value = true;
     try {
       const response = await axios.get(`${API_URL}/products`)
@@ -143,12 +204,31 @@ export const useBotStore = defineStore("bot", () => {
   }
 
   const addToCart = (id) => {
-    const product = products.value.find((p) => p.id == id || p._id == id)
-    if (!product) { toast.error("A termék nem elérhető!"); return }
-    if (product.store === 0) { toast.error("Nincs készleten"); return; }
+    const productInList = products.value.find((p) => p.id == id || p._id == id)
+
+    const isCurrentProduct = currentProduct.value && (currentProduct.value.id == id || currentProduct.value._id == id)
+
+    if (!productInList && !isCurrentProduct) { 
+        toast.error("A termék nem elérhető!"); 
+        return 
+    }
+
+    const availableStore = productInList ? productInList.store : currentProduct.value.store
+    if (availableStore === 0) { 
+        toast.error("Nincs készleten"); 
+        return; 
+    }
+
     if (!cart.value) cart.value = {}
     cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
-    product.store--
+
+    if (productInList) {
+        productInList.store--
+    }
+    if (isCurrentProduct) {
+        currentProduct.value.store--
+    }
+
     localStorage.setItem("cart", JSON.stringify(cart.value))
     toast("Kosárhoz adva", { icon: h(OhVueIcon, { name: "bi-bag-check-fill", class: "font-size: 2rem", animation: "wrench" }) });
   };
@@ -309,6 +389,11 @@ export const useBotStore = defineStore("bot", () => {
     toast,
     isLoading,
     currentProduct,
+    selectedCategory,
+    categories,
+    wishlist,
+    fetchWishlist,
+    toggleWishlist,
     loadAll, 
     addToCart, 
     saveProduct, 

@@ -45,6 +45,7 @@ router.get('/', async (req, res) => {
         const transformed = products.map(p => ({
             id: p._id,
             name: p.name,
+            category: p.category,
             unit: p.unit,
             desc: p.desc,
             store: p.store,
@@ -68,6 +69,7 @@ router.get('/:id', async (req, res) => {
         
         const transformed = {
             id: product._id,
+            category: product.category,
             name: product.name,
             unit: product.unit,
             desc: product.desc,
@@ -100,6 +102,7 @@ router.post('/', [auth, admin], (req, res) => {
             
             const product = new Product({
                 name: req.body.name,
+                category: req.body.category,
                 unit: req.body.unit,
                 desc: req.body.desc,
                 store: req.body.store,

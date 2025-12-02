@@ -16,43 +16,57 @@
                 </thead>
                 <tbody>
                     <tr v-for="product in bolt.products" :key="product.id">
+    
+                <template v-if="editingId === product.id">
+                    <td>
+                        <input type="text" class="form-control mb-2" v-model="editData.name" placeholder="Név">
                         
-                        <template v-if="editingId === product.id">
-                            <td><input type="text" class="form-control" v-model="editData.name"></td>
-                            <td><input type="text" class="form-control" v-model="editData.price"></td>
-                            <td><input type="text" class="form-control" v-model="editData.unit" style="width: 80px;"></td>
-                            <td><input type="text" class="form-control" v-model="editData.desc"></td>
-                            <td><input type="number" class="form-control" v-model.number="editData.store" style="width: 80px;"></td>
-                            <td class="text-center">
-                                <button class="btn btn-success btn-sm me-2" @click="saveEdit(product.id)">
-                                    💾 Mentés
-                                </button>
-                                <button class="btn btn-secondary btn-sm" @click="cancelEdit">
-                                    ❌ Mégse
-                                </button>
-                            </td>
-                        </template>
+                        <select class="form-select" v-model="editData.category">
+                            <option value="Étel">Étel</option>
+                            <option value="Ital">Ital</option>
+                            <option value="Édesség">Édesség</option>
+                            <option value="Vegyi áru">Vegyi áru</option>
+                        </select>
+                    </td>
+                    
+                    <td><input type="number" class="form-control" v-model="editData.price"></td>
+                    <td><input type="text" class="form-control" v-model="editData.unit" style="width: 80px;"></td>
+                    <td><input type="text" class="form-control" v-model="editData.desc"></td>
+                    <td><input type="number" class="form-control" v-model.number="editData.store" style="width: 80px;"></td>
+                    
+                    <td class="text-center">
+                        <button class="btn btn-success btn-sm me-2" @click="saveEdit(product.id)">
+                            💾 Mentés
+                        </button>
+                        <button class="btn btn-secondary btn-sm" @click="cancelEdit">
+                            ❌ Mégse
+                        </button>
+                    </td>
+                </template>
 
-                        <template v-else>
-                            <td>{{ product.name }}</td>
-                            <td>{{ product.price }}</td>
-                            <td>{{ product.unit }}</td>
-                            <td>{{ product.desc }}</td>
-                            <td>
-                                <span :class="{'text-danger fw-bold': product.store === 0, 'text-success': product.store > 0}">
-                                    {{ product.store }} db
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <button class="btn btn-primary btn-sm me-2" @click="startEdit(product)">
-                                    ✏️
-                                </button>
-                                <button class="btn btn-danger btn-sm" @click="bolt.deleteProductFromDb(product.id)">
-                                    🗑️
-                                </button>
-                            </td>
-                        </template>
-                    </tr>
+                <template v-else>
+                    <td>
+                        <div class="fw-bold">{{ product.name }}</div>
+                        <span class="badge bg-info text-dark">{{ product.category || 'Nincs kategória' }}</span>
+                    </td>
+                    <td>{{ product.price }}</td>
+                    <td>{{ product.unit }}</td>
+                    <td>{{ product.desc }}</td>
+                    <td>
+                        <span :class="{'text-danger fw-bold': product.store === 0, 'text-success': product.store > 0}">
+                            {{ product.store }} db
+                        </span>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-primary btn-sm me-2" @click="startEdit(product)">
+                            ✏️
+                        </button>
+                        <button class="btn btn-danger btn-sm" @click="bolt.deleteProductFromDb(product.id)">
+                            🗑️
+                        </button>
+                    </td>
+                </template>
+            </tr>
                 </tbody>
             </table>
         </div>
@@ -69,23 +83,19 @@
     
     const bolt = useBotStore()
     
-    // Szerkesztéshez szükséges változók
-    const editingId = ref(null) // Melyik ID-t szerkesztjük éppen
-    const editData = ref({})    // Ideiglenes tároló a módosításoknak
+    const editingId = ref(null)
+    const editData = ref({})
 
-    // Szerkesztés indítása: átmásoljuk az adatokat az ideiglenes tárolóba
     const startEdit = (product) => {
-        editingId.value = product.id
-        editData.value = { ...product } // Másolat készítése, hogy ne azonnal frissüljön a nézet
-    }
+    editingId.value = product.id
+    editData.value = { ...product, category: product.category || '' } 
+}
 
-    // Szerkesztés mentése
     const saveEdit = () => {
         bolt.updateProduct(editData.value)
-        editingId.value = null // Kilépés a szerkesztés módból
+        editingId.value = null 
     }
 
-    // Mégse gomb
     const cancelEdit = () => {
         editingId.value = null
         editData.value = {}

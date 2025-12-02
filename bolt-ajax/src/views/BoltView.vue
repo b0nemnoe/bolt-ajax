@@ -9,6 +9,11 @@ const getImageUrl = (imageName) => {
   if (imageName.startsWith('http')) return imageName
   return `${BACKEND_URL}/uploads/${imageName}`
 }
+
+const isInWishlist = (id) => {
+    return botStore.wishlist.some(p => (p._id == id || p.id == id))
+}
+
 </script>
 
 <template>
@@ -23,6 +28,14 @@ const getImageUrl = (imageName) => {
             <span class="input-group-text">🔍</span>
             <input type="text" class="form-control" placeholder="Keresés..." v-model="botStore.searchQuery">
           </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" v-model="botStore.selectedCategory">
+              <option value="all">Minden kategória</option>
+              <option v-for="cat in botStore.categories" :key="cat" :value="cat">
+                  {{ cat === 'all' ? '' : cat }}
+              </option>
+          </select>
         </div>
         <div class="col-md-3">
           <select class="form-select" v-model="botStore.sortOrder">
@@ -63,7 +76,9 @@ const getImageUrl = (imageName) => {
         >
       </RouterLink>
         <div class="card-body d-flex flex-column">
+          
           <h5 class="card-title">{{ p.name }}</h5>
+          
           <p class="card-text text-muted small flex-grow-1">{{ p.desc }}</p>
           <div class="d-flex justify-content-between align-items-center mt-3">
             <span class="fw-bold fs-5 text-primary">{{ p.price }} Ft</span>
@@ -72,12 +87,32 @@ const getImageUrl = (imageName) => {
             </span>
           </div>
         </div>
-        <div class="card-footer bg-white border-top-0 pb-3 text-center">
-          <button :disabled="p.store === 0" @click="botStore.addToCart(p.id)" class="btn btn-outline-primary w-100">
-            <span v-if="p.store > 0">Kosárba &#128722;</span>
-            <span v-else>Nem rendelhető 🚫</span>
-          </button>
-        </div>
+        
+        <div class="card-footer bg-white border-top-0 pb-3">
+  <div class="d-flex gap-2">
+    
+    <button 
+      :disabled="p.store === 0" 
+      @click="botStore.addToCart(p.id)" 
+      class="btn btn-outline-primary flex-grow-1"
+    >
+      <span v-if="p.store > 0">Kosárba &#128722;</span>
+      <span v-else>Nem rendelhető 🚫</span>
+    </button>
+    
+    <button 
+      @click="botStore.toggleWishlist(p.id)" 
+      class="btn btn-outline-danger"
+      title="Hozzáadás a kedvencekhez"
+    >
+      <v-icon 
+        :name="isInWishlist(p.id) ? 'bi-heart-fill' : 'bi-heart'" 
+        scale="1.0"
+      />
+    </button>
+
+  </div>
+</div>
       </div>
     </div>
   </div>

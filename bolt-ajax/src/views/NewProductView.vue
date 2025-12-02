@@ -9,8 +9,19 @@
             </div>
 
             <div class="mb-3">
+            <label class="form-label">Kategória</label>
+            <select class="form-select" v-model="category" required>
+                <option value="" disabled selected>Válassz kategóriát...</option>
+                <option value="Étel">Étel</option>
+                <option value="Ital">Ital</option>
+                <option value="Édesség">Édesség</option>
+                <option value="Vegyi áru">Vegyi áru</option>
+            </select>
+</div>
+
+            <div class="mb-3">
                 <label class="form-label">Ár (Ft)</label>
-                <input class="form-control" type="number" v-model="price" required placeholder="Pl. 350">
+                <input class="form-control" type="number" v-model="price" required placeholder="Pl. 350" max="999999">
             </div>
 
             <div class="mb-3">
@@ -46,6 +57,7 @@
     
     // Külön ref-eket használunk, hogy könnyebb legyen a FormData építés
     const name = ref('')
+    const category = ref('')
     const price = ref('')
     const unit = ref('')
     const desc = ref('')
@@ -61,16 +73,15 @@
         // FormData építése: ez kell a fájlfeltöltéshez
         const formData = new FormData()
         formData.append('name', name.value)
+        formData.append('category', category.value)
         formData.append('price', price.value)
         formData.append('unit', unit.value)
         formData.append('desc', desc.value)
         formData.append('store', store.value)
         
         if (selectedFile.value) {
-            formData.append('image', selectedFile.value) // Itt csatoljuk a képet
+            formData.append('image', selectedFile.value) 
         }
-
-        // Elküldjük a store-nak a FormData-t
         bolt.saveProduct(formData)
     }
 </script>

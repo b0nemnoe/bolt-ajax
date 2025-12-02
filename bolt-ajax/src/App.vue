@@ -60,8 +60,8 @@ const cartItemCount = computed(() => {
               </span>
             </RouterLink>
           </li>
+          <li><RouterLink class="nav-link position-relative nav-item me-3" to="/wishlist">❤️ Kívánságlista</RouterLink></li>
 
-          <!-- Felhasználó -->
           <li class="nav-item" v-if="!botStore.token">
             <RouterLink class="btn btn-light btn-sm fw-bold text-primary" to="/login">Bejelentkezés</RouterLink>
           </li>

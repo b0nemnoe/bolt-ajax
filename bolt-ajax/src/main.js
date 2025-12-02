@@ -10,9 +10,9 @@ import Toast from "vue-toastification"
 import "vue-toastification/dist/index.css"
 
 import { OhVueIcon, addIcons } from "oh-vue-icons"
-import { BiBagCheckFill } from "oh-vue-icons/icons"
+import { BiBagCheckFill, BiHeart, BiHeartFill } from "oh-vue-icons/icons"
 
-addIcons(BiBagCheckFill)
+addIcons(BiBagCheckFill, BiHeart, BiHeartFill )
 
 const app = createApp(App)
 app.component("v-icon", OhVueIcon)

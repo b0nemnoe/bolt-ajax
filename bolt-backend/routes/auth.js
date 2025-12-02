@@ -34,29 +34,25 @@ router.post('/register', async (req, res) => {
     }
 });
 
-// --- BEJELENTKEZÉS (POST /api/auth/login) ---
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 1. Keresés email alapján
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(400).json({ message: 'Hibás email vagy jelszó!' });
         }
 
-        // 2. Jelszó ellenőrzése
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             return res.status(400).json({ message: 'Hibás email vagy jelszó!' });
         }
 
-        // 3. Token generálása (ezzel tudja igazolni magát később)
-        // A "TITKOS_KULCS"-ot élesben .env fájlba rakjuk, de most tesztre jó ideírva is.
+    
         const token = jwt.sign(
             { id: user._id, isAdmin: user.isAdmin },
             process.env.JWT_SECRET || 'titkoskulcs123', 
-            { expiresIn: '1h' } // 1 óráig érvényes
+            { expiresIn: '1h' }
         );
 
         res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });

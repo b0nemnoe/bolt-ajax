@@ -4,6 +4,10 @@ import { useRoute } from 'vue-router'
 import { useBotStore } from '@/stores/bot.js'
 import { BACKEND_URL } from '@/stores/bot.js'
 
+const isInWishlist = (id) => {
+    return botStore.wishlist && botStore.wishlist.some(p => (p._id == id || p.id == id))
+}
+
 const route = useRoute()
 const botStore = useBotStore()
 
@@ -66,13 +70,27 @@ const getImageUrl = (imageName) => {
         </div>
 
         <div class="d-grid gap-2">
-          <button 
-            :disabled="botStore.currentProduct.store === 0" 
-            @click="botStore.addToCart(botStore.currentProduct.id)" 
-            class="btn btn-primary btn-lg"
-          >
-            Kosárba teszem 🛒
-          </button>
+          
+          <div class="d-flex gap-2">
+            <button 
+              :disabled="botStore.currentProduct.store === 0" 
+              @click="botStore.addToCart(botStore.currentProduct.id)" 
+              class="btn btn-primary btn-lg flex-grow-1"
+            >
+              Kosárba teszem 🛒
+            </button>
+
+            <button 
+              @click="botStore.toggleWishlist(botStore.currentProduct.id)" 
+              class="btn btn-outline-danger btn-lg"
+              title="Kedvencekhez adás"
+            >
+               <v-icon 
+                  :name="isInWishlist(botStore.currentProduct.id) ? 'bi-heart-fill' : 'bi-heart'" 
+                  scale="1.5"
+              />
+            </button>
+          </div>
           
           <RouterLink to="/" class="btn btn-outline-secondary">
             ← Vissza a termékekhez

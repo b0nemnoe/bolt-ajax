@@ -7,6 +7,7 @@ import DeleteProductView from '../views/DeleteProductView.vue'
 import CartView from '../views/CartView.vue'
 import AdminOrdersView from '../views/AdminOrdersView.vue'
 import ProductDetailsView from '../views/ProductDetailsView.vue'
+import WishlistView from '../views/WishlistView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,10 +56,15 @@ const router = createRouter({
       name: 'product-details',
       component: ProductDetailsView
     },
+    {
+      path: '/wishlist',
+      name: 'wishlist',
+      component: WishlistView,
+      meta: { requiresAuth: true }
+    },
   ],
 })
 
-// Útvonalőr (Navigation Guard)
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
   const userString = localStorage.getItem('user')
