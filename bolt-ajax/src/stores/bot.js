@@ -34,6 +34,50 @@ export const useBotStore = defineStore("bot", () => {
   const sortOrder = ref('default')
   const selectedCategory = ref('all')
   const wishlist = ref([])
+  const reviews = ref([])
+
+  const fetchReviews = async (productId) => {
+    try {
+      const response = await axios.get(`${API_URL}/reviews/${productId}`)
+      reviews.value = response.data
+    } catch (error) {
+      console.error("Hiba az értékelések betöltésekor:", error)
+    }
+  }
+
+  const addReview = async (reviewData) => {
+    try {
+      const response = await axios.post(`${API_URL}/reviews`, reviewData)
+      reviews.value.unshift(response.data)
+      toast.success("Köszönjük az értékelést! ⭐")
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Hiba történt!")
+    }
+  }
+
+  const deleteReview = async (reviewId) => {
+    try {
+      await axios.delete(`${API_URL}/reviews/${reviewId}`)
+      reviews.value = reviews.value.filter(r => r._id !== reviewId)
+      toast.info("Értékelés törölve")
+    } catch (error) {
+      toast.error("Nem sikerült törölni")
+    }
+  }
+
+  const updateReview = async (id, reviewData) => {
+    try {
+      const response = await axios.put(`${API_URL}/reviews/${id}`, reviewData)
+    
+      const index = reviews.value.findIndex(r => r._id === id)
+      if (index !== -1) {
+        reviews.value[index] = response.data
+      }
+      toast.success("Értékelés frissítve! ✏️")
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Hiba a módosításkor!")
+    }
+  }
 
   const categories = computed(() => {
     if (!products.value) return []
@@ -191,9 +235,11 @@ export const useBotStore = defineStore("bot", () => {
   const fetchProductById = async (id) => {
     isLoading.value = true
     currentProduct.value = null
+    reviews.value = []
     try {
       const response = await axios.get(`${API_URL}/products/${id}`)
       currentProduct.value = response.data
+      await fetchReviews(id)
     } catch (error) {
       console.error(error)
       toast.error("Nem sikerült betölteni a terméket!")
@@ -392,6 +438,10 @@ export const useBotStore = defineStore("bot", () => {
     selectedCategory,
     categories,
     wishlist,
+    reviews,
+    addReview,
+    updateReview,
+    deleteReview,
     fetchWishlist,
     toggleWishlist,
     loadAll, 
