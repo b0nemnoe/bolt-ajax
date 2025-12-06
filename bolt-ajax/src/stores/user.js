@@ -102,5 +102,24 @@ export const useUserStore = defineStore("user", () => {
         }
     }
 
-    return { user, token, wishlist, login, register, logout, updateProfile, changePassword, fetchWishlist, toggleWishlist }
+    const forgotPassword = async (email) => {
+        try {
+            await $axios.post('/auth/forgot-password', { email })
+            toast.success("Email elküldve! 📧")
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Hiba történt!")
+        }
+    }
+
+    const resetPassword = async (token, newPassword) => {
+        try {
+            await $axios.post(`/auth/reset-password/${token}`, { password: newPassword })
+            toast.success("Jelszó sikeresen módosítva! 🔒")
+            router.push('/login')
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Hiba vagy lejárt token!")
+        }
+    }
+
+    return { user, token, wishlist, login, register, logout, updateProfile, changePassword, fetchWishlist, toggleWishlist, forgotPassword, resetPassword }
 })

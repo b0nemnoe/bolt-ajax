@@ -1,3 +1,5 @@
+const crypto = require('crypto');
+const { sendPasswordResetEmail } = require('../utils/emailService');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -102,5 +104,57 @@ router.put('/password', auth, async (req, res) => {
     }
 });
 
+router.post('/forgot-password', async (req, res) => {
+    const { email } = req.body;
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'Nincs fiók ezzel az email címmel.' });
+        }
+
+        const token = crypto.randomBytes(20).toString('hex');
+
+        user.resetPasswordToken = token;
+        user.resetPasswordExpires = Date.now() + 3600000;
+
+        await user.save();
+
+        sendPasswordResetEmail(user.email, token);
+
+        res.json({ message: 'Email elküldve! Ellenőrizd a fiókodat.' });
+
+    } catch (err) {
+        res.status(500).json({ message: 'Hiba történt a feldolgozás során.' });
+    }
+});
+
+router.post('/reset-password/:token', async (req, res) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    try {
+        const user = await User.findOne({
+            resetPasswordToken: token,
+            resetPasswordExpires: { $gt: Date.now() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'A token érvénytelen vagy lejárt.' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+        
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+
+        await user.save();
+
+        res.json({ message: 'Sikeres jelszóváltás! Most már bejelentkezhetsz.' });
+
+    } catch (err) {
+        res.status(500).json({ message: 'Hiba történt.' });
+    }
+});
 
 module.exports = router;

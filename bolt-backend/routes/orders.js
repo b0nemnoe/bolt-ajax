@@ -5,7 +5,7 @@ const admin = require('../middleware/admin');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
-const sendOrderConfirmation = require('../utils/emailService');
+const { sendOrderConfirmation } = require('../utils/emailService');
 
 router.post('/', auth, async (req, res) => {
     const { items, totalPrice } = req.body;

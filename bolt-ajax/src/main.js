@@ -21,7 +21,15 @@ app.use(router)
 const toastOptions = {
     position: "top-right",
     timeout: 2000,
-    closeOnClick: true
+    closeOnClick: true,
+    maxToasts: 3,
+    newestOnTop: true,
+    filterBeforeCreate: (toast, toasts) => {
+        if (toasts.filter(t => t.content === toast.content).length !== 0) {
+            return false;
+        }
+        return toast;
+    }
 }
 app.use(Toast, toastOptions)
 

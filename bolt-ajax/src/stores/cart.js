@@ -9,6 +9,7 @@ import router from '@/router'
 export const useCartStore = defineStore("cart", () => {
     const cart = ref({})
     const toast = useToast()
+    const coupon = ref(null)
     
     const savedCart = localStorage.getItem("cart")
     if (savedCart) {
@@ -77,7 +78,7 @@ export const useCartStore = defineStore("cart", () => {
         toast.error("Kosár kiürítve")
     }
 
-    const countTotal = () => {
+    const originalTotal = () => {
         const productStore = useProductStore()
         let total = 0
         for (const i in cart.value) {
@@ -85,6 +86,15 @@ export const useCartStore = defineStore("cart", () => {
             if (p) total += cart.value[i] * p.price
         }
         return total
+    }
+
+    const discountAmount = () => {
+        if (!coupon.value) return 0
+        return Math.round(originalTotal() * (coupon.value.discountPercent / 100))
+    }
+
+    const finalTotal = () => {
+        return originalTotal() - discountAmount()
     }
 
     const checkout = async () => {
@@ -115,10 +125,11 @@ export const useCartStore = defineStore("cart", () => {
         try {
             await $axios.post('/orders', {
                 items: orderItems,
-                totalPrice: countTotal()
+                totalPrice: finalTotal()
             })
             toast.success("Rendelés sikeresen leadva! 🚀")
             cart.value = {}
+            coupon.value = {}
             localStorage.removeItem('cart')
             await productStore.loadAll()
             router.push('/')
@@ -131,5 +142,24 @@ export const useCartStore = defineStore("cart", () => {
         localStorage.setItem("cart", JSON.stringify(newCart))
     }, { deep: true })
 
-    return { cart, addToCart, modifyQuantity, deleteProductFromCart, emptyCart, countTotal, checkout }
+    const applyCoupon = async (code) => {
+        try {
+            const response = await $axios.post('/coupons/validate', { code })
+            coupon.value = response.data
+            toast.success(`Sikeres kupon beváltás! -${response.data.discountPercent}%`)
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Érvénytelen kupon!")
+            coupon.value = null
+        }
+    }
+
+    const removeCoupon = () => {
+        coupon.value = null
+        toast.info("Kupon eltávolítva")
+    }
+
+    return { cart, coupon, 
+        addToCart, modifyQuantity, deleteProductFromCart, emptyCart, 
+        originalTotal, discountAmount, finalTotal, checkout, 
+        applyCoupon, removeCoupon }
 })

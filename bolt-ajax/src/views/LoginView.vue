@@ -17,6 +17,9 @@
         <button class="btn btn-primary w-100 mb-3">
           {{ isLogin ? 'Belépés' : 'Regisztráció' }}
         </button>
+        <div class="mb-3 text-end" v-if="isLogin">
+            <router-link to="/forgot-password" class="small text-decoration-none">Elfelejtetted a jelszavad?</router-link>
+        </div>
       </form>
 
       <div class="text-center">

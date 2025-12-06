@@ -1,11 +1,10 @@
-// models/User.js
 const mongoose = require('mongoose');
 
 const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: true,
-        unique: true // Nem lehet két ugyanilyen email
+        unique: true
     },
     password: {
         type: String,
@@ -13,10 +12,12 @@ const UserSchema = new mongoose.Schema({
     },
     isAdmin: {
         type: Boolean,
-        default: false // Alapból nem admin
+        default: false
     },
     name: { type: String, default: '' },
     address: { type: String, default: '' },
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
     
     wishlist: [{
         type: mongoose.Schema.Types.ObjectId,

@@ -1,13 +1,15 @@
 <script setup>
+import { ref, computed } from 'vue'
+import { RouterLink } from 'vue-router'
 import { useCartStore } from '@/stores/cart.js'
 import { useProductStore } from '@/stores/product.js'
 import { useUserStore } from '@/stores/user.js'
-import { computed } from 'vue'
-import { RouterLink } from 'vue-router'
 
 const cartStore = useCartStore()
 const productStore = useProductStore()
 const userStore = useUserStore()
+
+const couponCode = ref('')
 
 const getProduct = (id) => {
   if (!productStore.products || productStore.products.length === 0) return null
@@ -40,6 +42,7 @@ const validCartItems = computed(() => {
 
     <div v-else class="row justify-content-center">
       <div class="col-lg-10">
+        
         <div class="table-responsive shadow-sm rounded border">
           <table class="table table-hover align-middle mb-0 bg-white">
             <thead class="table-light">
@@ -71,25 +74,65 @@ const validCartItems = computed(() => {
                 </td>
               </tr>
             </tbody>
-            <tfoot class="table-light border-top">
-              <tr>
-                <td colspan="3" class="text-end fw-bold fs-5 pt-3">Végösszeg:</td>
-                <td class="text-end fw-bold fs-4 text-success pt-3">{{ cartStore.countTotal() }} Ft</td>
-                <td></td>
-              </tr>
-            </tfoot>
           </table>
+        </div>
+
+        <div class="row mt-4">
+            
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Kuponkód 🎫</h5>
+                        
+                        <div v-if="!cartStore.coupon" class="input-group mt-3">
+                            <input type="text" class="form-control" v-model="couponCode" placeholder="Írd be a kódot...">
+                            <button @click="cartStore.applyCoupon(couponCode)" class="btn btn-outline-primary">Beváltás</button>
+                        </div>
+
+                        <div v-else class="alert alert-success mt-2 d-flex justify-content-between align-items-center mb-0">
+                            <span>
+                                <strong>{{ cartStore.coupon.code }}</strong> 
+                                (-{{ cartStore.coupon.discountPercent }}%) aktiválva! 🎉
+                            </span>
+                            <button @click="cartStore.removeCoupon" class="btn btn-sm ">❌</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-6 mt-3 mt-md-0">
+                <div class="card shadow-sm border-0 bg-light h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Részösszeg:</span>
+                            <span>{{ cartStore.originalTotal() }} Ft</span>
+                        </div>
+                        <div v-if="cartStore.coupon" class="d-flex justify-content-between mb-2 text-success">
+                            <span>Kedvezmény:</span>
+                            <span>-{{ cartStore.discountAmount() }} Ft</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between fs-4 fw-bold">
+                            <span>Végösszeg:</span>
+                            <span class="text-primary">{{ cartStore.finalTotal() }} Ft</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
           <button @click="cartStore.emptyCart()" class="btn btn-outline-danger">🗑️ Kosár ürítése</button>
+          
           <div v-if="userStore.token">
              <button @click="cartStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">Rendelés elküldése 🚀</button>
           </div>
           <div v-else>
-            <RouterLink to="/login" class="btn btn-warning shadow fw-bold">🔑 Jelentkezz be!</RouterLink>
+            <RouterLink to="/login" class="btn btn-warning shadow fw-bold">🔑 Jelentkezz be a rendeléshez!</RouterLink>
           </div>
         </div>
+
       </div>
     </div>
   </div>

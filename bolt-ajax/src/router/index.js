@@ -8,6 +8,8 @@ import CartView from '../views/CartView.vue'
 import AdminOrdersView from '../views/AdminOrdersView.vue'
 import ProductDetailsView from '../views/ProductDetailsView.vue'
 import WishlistView from '../views/WishlistView.vue'
+import ForgotPasswordView from '../views/ForgotPasswordView.vue'
+import ResetPasswordView from '../views/ResetPasswordView.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -61,6 +63,16 @@ const router = createRouter({
       name: 'wishlist',
       component: WishlistView,
       meta: { requiresAuth: true }
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: ForgotPasswordView
+    },
+    {
+      path: '/reset-password/:token',
+      name: 'reset-password',
+      component: ResetPasswordView
     },
   ],
 })
