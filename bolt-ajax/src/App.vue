@@ -1,20 +1,22 @@
 <script setup>
 import { onMounted, computed } from 'vue'
 import { RouterLink, RouterView } from 'vue-router'
-import { useBotStore } from '@/stores/bot.js'
 
-const botStore = useBotStore()
+import { useProductStore } from '@/stores/product.js'
+import { useCartStore } from '@/stores/cart.js'
+import { useUserStore } from '@/stores/user.js'
+
+const productStore = useProductStore()
+const cartStore = useCartStore()
+const userStore = useUserStore()
 
 onMounted(() => {
-  // Biztonsági ellenőrzés
-  if (botStore && typeof botStore.loadAll === 'function') {
-    botStore.loadAll()
-  }
+  productStore.loadAll()
 })
 
 const cartItemCount = computed(() => {
-  if (!botStore.cart) return 0
-  return Object.values(botStore.cart).reduce((acc, qty) => acc + qty, 0)
+  if (!cartStore.cart) return 0
+  return Object.values(cartStore.cart).reduce((acc, qty) => acc + qty, 0)
 })
 </script>
 
@@ -38,8 +40,7 @@ const cartItemCount = computed(() => {
 
         <ul class="navbar-nav ms-auto align-items-center">
           
-          <!-- Admin Dropdown -->
-          <li class="nav-item dropdown me-3" v-if="botStore.user && botStore.user.isAdmin">
+          <li class="nav-item dropdown me-3" v-if="userStore.user && userStore.user.isAdmin">
             <a class="nav-link dropdown-toggle admin-badge" href="#" role="button" data-bs-toggle="dropdown">
               Adminisztráció
             </a>
@@ -51,7 +52,6 @@ const cartItemCount = computed(() => {
             </ul>
           </li>
 
-          <!-- Kosár -->
           <li class="nav-item me-3">
             <RouterLink class="nav-link position-relative" to="/cart" active-class="active">
               Kosár &#128722;
@@ -60,20 +60,25 @@ const cartItemCount = computed(() => {
               </span>
             </RouterLink>
           </li>
-          <li><RouterLink class="nav-link position-relative nav-item me-3" to="/wishlist">❤️ Kívánságlista</RouterLink></li>
 
-          <li class="nav-item" v-if="!botStore.token">
+          <li class="nav-item me-3">
+            <RouterLink class="nav-link" to="/wishlist" active-class="active">
+              ❤️ Kívánságlista
+            </RouterLink>
+          </li>
+
+          <li class="nav-item" v-if="!userStore.token">
             <RouterLink class="btn btn-light btn-sm fw-bold text-primary" to="/login">Bejelentkezés</RouterLink>
           </li>
 
           <li class="nav-item dropdown" v-else>
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              👤 {{ botStore.user?.email ? botStore.user.email.split('@')[0] : 'Fiókom' }}
+              👤 {{ userStore.user?.email ? userStore.user.email.split('@')[0] : 'Fiókom' }}
             </a>
             <ul class="dropdown-menu dropdown-menu-end fade-down">
               <li><RouterLink class="dropdown-item" to="/profile">📜 Rendeléseim</RouterLink></li>
               <li><hr class="dropdown-divider"></li>
-              <li><button @click="botStore.logout" class="dropdown-item text-danger">Kijelentkezés</button></li>
+              <li><button @click="userStore.logout" class="dropdown-item text-danger">Kijelentkezés</button></li>
             </ul>
           </li>
 
@@ -82,7 +87,6 @@ const cartItemCount = computed(() => {
     </div>
   </nav>
 
-  <!-- TARTALOM - Animáció nélkül a stabilitásért -->
   <div class="container main-content">
     <RouterView />
   </div>

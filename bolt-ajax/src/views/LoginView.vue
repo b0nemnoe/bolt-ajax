@@ -30,18 +30,18 @@
 
 <script setup>
 import { ref } from 'vue'
-import { useBotStore } from '@/stores/bot'
+import { useUserStore } from '@/stores/user.js'
 
-const botStore = useBotStore()
-const isLogin = ref(true) // Váltókapcsoló: Login vagy Register mód
+const userStore = useUserStore()
+const isLogin = ref(true)
 const email = ref('')
 const password = ref('')
 
 const handleSubmit = () => {
   if (isLogin.value) {
-    botStore.login(email.value, password.value)
+    userStore.login(email.value, password.value)
   } else {
-    botStore.register(email.value, password.value)
+    userStore.register(email.value, password.value)
   }
 }
 </script>

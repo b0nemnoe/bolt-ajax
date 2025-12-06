@@ -1,8 +1,13 @@
 <script setup>
-import { useBotStore } from '@/stores/bot.js'
-import { BACKEND_URL } from '@/stores/bot.js'
+import { BACKEND_URL } from '@/utils/axios.js'
 
-const botStore = useBotStore()
+import { useProductStore } from '@/stores/product.js'
+import { useCartStore } from '@/stores/cart.js'
+import { useUserStore } from '@/stores/user.js'
+
+const productStore = useProductStore()
+const cartStore = useCartStore()
+const userStore = useUserStore()
 
 const getImageUrl = (imageName) => {
   if (!imageName) return 'https://placehold.co/300x200?text=Nincs+kép'
@@ -11,7 +16,7 @@ const getImageUrl = (imageName) => {
 }
 
 const isInWishlist = (id) => {
-    return botStore.wishlist.some(p => (p._id == id || p.id == id))
+    return userStore.wishlist.some(p => (p._id == id || p.id == id))
 }
 
 </script>
@@ -26,19 +31,19 @@ const isInWishlist = (id) => {
         <div class="col-md-6">
           <div class="input-group">
             <span class="input-group-text">🔍</span>
-            <input type="text" class="form-control" placeholder="Keresés..." v-model="botStore.searchQuery">
+            <input type="text" class="form-control" placeholder="Keresés..." v-model="productStore.searchQuery">
           </div>
         </div>
         <div class="col-md-3">
-          <select class="form-select" v-model="botStore.selectedCategory">
+          <select class="form-select" v-model="productStore.selectedCategory">
               <option value="all">Minden kategória</option>
-              <option v-for="cat in botStore.categories" :key="cat" :value="cat">
+              <option v-for="cat in productStore.categories" :key="cat" :value="cat">
                   {{ cat === 'all' ? '' : cat }}
               </option>
           </select>
         </div>
         <div class="col-md-3">
-          <select class="form-select" v-model="botStore.sortOrder">
+          <select class="form-select" v-model="productStore.sortOrder">
             <option value="default">Rendezés: Alap</option>
             <option value="asc">Ár: Növekvő</option>
             <option value="desc">Ár: Csökkenő</option>
@@ -46,14 +51,14 @@ const isInWishlist = (id) => {
         </div>
         <div class="col-md-3 text-center text-md-start">
           <div class="form-check form-switch d-inline-block">
-            <input class="form-check-input" type="checkbox" id="stockFilter" v-model="botStore.onlyInStock">
+            <input class="form-check-input" type="checkbox" id="stockFilter" v-model="productStore.onlyInStock">
             <label class="form-check-label ms-2" for="stockFilter">Raktáron</label>
           </div>
         </div>
       </div>
     </div>
 
-    <div v-if="botStore.isLoading" class="text-center my-5">
+    <div v-if="productStore.isLoading" class="text-center my-5">
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
         <span class="visually-hidden">Töltés...</span>
       </div>
@@ -62,11 +67,11 @@ const isInWishlist = (id) => {
 
     <div v-else class="row gap-4 justify-content-center">
       
-      <div v-if="botStore.filteredProducts.length === 0" class="alert alert-warning text-center w-75">
+      <div v-if="productStore.filteredProducts.length === 0" class="alert alert-warning text-center w-75">
         Nincs találat. 😢
       </div>
 
-      <div v-for="p in botStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm product-card">
+      <div v-for="p in productStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm product-card">
         <RouterLink :to="{ name: 'product-details', params: { id: p.id } }">
         <img 
           :src="getImageUrl(p.image)" 
@@ -93,7 +98,7 @@ const isInWishlist = (id) => {
     
     <button 
       :disabled="p.store === 0" 
-      @click="botStore.addToCart(p.id)" 
+      @click="cartStore.addToCart(p.id)" 
       class="btn btn-outline-primary flex-grow-1"
     >
       <span v-if="p.store > 0">Kosárba &#128722;</span>
@@ -101,7 +106,7 @@ const isInWishlist = (id) => {
     </button>
     
     <button 
-      @click="botStore.toggleWishlist(p.id)" 
+      @click="userStore.toggleWishlist(p.id)" 
       class="btn btn-outline-danger"
       title="Hozzáadás a kedvencekhez"
     >

@@ -9,15 +9,15 @@
             </div>
 
             <div class="mb-3">
-            <label class="form-label">Kategória</label>
-            <select class="form-select" v-model="category" required>
-                <option value="" disabled selected>Válassz kategóriát...</option>
-                <option value="Étel">Étel</option>
-                <option value="Ital">Ital</option>
-                <option value="Édesség">Édesség</option>
-                <option value="Vegyi áru">Vegyi áru</option>
-            </select>
-</div>
+                <label class="form-label">Kategória</label>
+                <select class="form-select" v-model="category" required>
+                    <option value="" disabled selected>Válassz kategóriát...</option>
+                    <option value="Étel">Étel</option>
+                    <option value="Ital">Ital</option>
+                    <option value="Édesség">Édesség</option>
+                    <option value="Vegyi áru">Vegyi áru</option>
+                </select>
+            </div>
 
             <div class="mb-3">
                 <label class="form-label">Ár (Ft)</label>
@@ -51,11 +51,10 @@
 
 <script setup>
     import { ref } from 'vue'
-    import { useBotStore } from '@/stores/bot';
+    import { useProductStore } from '@/stores/product.js'
     
-    const bolt = useBotStore()
+    const productStore = useProductStore()
     
-    // Külön ref-eket használunk, hogy könnyebb legyen a FormData építés
     const name = ref('')
     const category = ref('')
     const price = ref('')
@@ -64,13 +63,11 @@
     const store = ref('')
     const selectedFile = ref(null)
 
-    // Amikor a felhasználó kiválaszt egy fájlt
     const onFileChange = (e) => {
         selectedFile.value = e.target.files[0]
     }
 
     const onSubmit = () => {
-        // FormData építése: ez kell a fájlfeltöltéshez
         const formData = new FormData()
         formData.append('name', name.value)
         formData.append('category', category.value)
@@ -82,6 +79,7 @@
         if (selectedFile.value) {
             formData.append('image', selectedFile.value) 
         }
-        bolt.saveProduct(formData)
+        
+        productStore.saveProduct(formData)
     }
 </script>

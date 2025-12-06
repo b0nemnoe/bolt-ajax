@@ -52,12 +52,12 @@
           </div>
           <div class="card-body">
             
-            <div v-if="botStore.myOrders.length === 0" class="alert alert-info m-0">
+            <div v-if="orderStore.myOrders.length === 0" class="alert alert-info m-0">
               Még nem adtál le rendelést.
             </div>
 
             <div v-else class="accordion" id="ordersAccordion">
-              <div v-for="order in botStore.myOrders" :key="order._id" class="accordion-item">
+              <div v-for="order in orderStore.myOrders" :key="order._id" class="accordion-item">
                 <h2 class="accordion-header">
                   <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" :data-bs-target="'#order-' + order._id">
                     <div class="d-flex w-100 justify-content-between me-3 align-items-center">
@@ -91,15 +91,17 @@
 
 <script setup>
 import { onMounted, ref } from 'vue'
-import { useBotStore } from '@/stores/bot'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
+import { useOrderStore } from '@/stores/order.js'
+import { useUserStore } from '@/stores/user.js'
 
-const botStore = useBotStore()
+const orderStore = useOrderStore()
+const userStore = useUserStore()
 
 // Lokális state az űrlapokhoz
 const profileData = ref({
-    name: botStore.user?.name || '',
-    address: botStore.user?.address || ''
+    name: userStore.user?.name || '',
+    address: userStore.user?.address || ''
 })
 
 const passData = ref({
@@ -108,11 +110,11 @@ const passData = ref({
 })
 
 onMounted(() => {
-  botStore.fetchOrders()
+  orderStore.fetchOrders()
   // Ha belépéskor még nem volt meg a név/cím, de most betöltődött, frissítsük a mezőket
-  if(botStore.user) {
-      profileData.value.name = botStore.user.name || ''
-      profileData.value.address = botStore.user.address || ''
+  if(userStore.user) {
+      profileData.value.name = userStore.user.name || ''
+      profileData.value.address = userStore.user.address || ''
   }
 })
 
@@ -121,11 +123,11 @@ const formatDate = (dateString) => {
 }
 
 const saveProfile = () => {
-    botStore.updateProfile(profileData.value)
+    userStore.updateProfile(profileData.value)
 }
 
 const savePassword = async () => {
-    const success = await botStore.changePassword(passData.value)
+    const success = await userStore.changePassword(passData.value)
     if (success) {
         passData.value.currentPassword = ''
         passData.value.newPassword = ''

@@ -1,20 +1,24 @@
 <script setup>
-import { useBotStore } from '@/stores/bot.js'
+import { useCartStore } from '@/stores/cart.js'
+import { useProductStore } from '@/stores/product.js'
+import { useUserStore } from '@/stores/user.js'
 import { computed } from 'vue'
 import { RouterLink } from 'vue-router'
 
-const botStore = useBotStore()
+const cartStore = useCartStore()
+const productStore = useProductStore()
+const userStore = useUserStore()
 
 const getProduct = (id) => {
-  if (!botStore.products || botStore.products.length === 0) return null
-  return botStore.products.find(p => p.id == id || p._id == id)
+  if (!productStore.products || productStore.products.length === 0) return null
+  return productStore.products.find(p => p.id == id || p._id == id)
 }
 
 const validCartItems = computed(() => {
-  if (!botStore.cart) return []
+  if (!cartStore.cart) return []
   
   const items = []
-  for (const [id, quantity] of Object.entries(botStore.cart)) {
+  for (const [id, quantity] of Object.entries(cartStore.cart)) {
     const product = getProduct(id)
     if (product) {
       items.push({ id, quantity, product })
@@ -56,21 +60,21 @@ const validCartItems = computed(() => {
                 <td>{{ item.product.price }} Ft</td>
                 <td class="text-center">
                   <div class="btn-group shadow-sm" role="group">
-                    <button @click="botStore.modifyQuantity(item.id, '-')" class="btn btn-outline-secondary btn-sm">-</button>
+                    <button @click="cartStore.modifyQuantity(item.id, '-')" class="btn btn-outline-secondary btn-sm">-</button>
                     <span class="btn btn-light btn-sm disabled text-dark fw-bold px-3 border-top border-bottom">{{ item.quantity }}</span>
-                    <button @click="botStore.modifyQuantity(item.id, '+')" class="btn btn-outline-secondary btn-sm">+</button>
+                    <button @click="cartStore.modifyQuantity(item.id, '+')" class="btn btn-outline-secondary btn-sm">+</button>
                   </div>
                 </td>
                 <td class="text-end fw-bold text-primary">{{ item.quantity * item.product.price }} Ft</td>
                 <td class="text-end">
-                  <button @click="botStore.deleteProductFromCart(item.id)" class="btn btn-outline-danger btn-sm border-0">🗑️</button>
+                  <button @click="cartStore.deleteProductFromCart(item.id)" class="btn btn-outline-danger btn-sm border-0">🗑️</button>
                 </td>
               </tr>
             </tbody>
             <tfoot class="table-light border-top">
               <tr>
                 <td colspan="3" class="text-end fw-bold fs-5 pt-3">Végösszeg:</td>
-                <td class="text-end fw-bold fs-4 text-success pt-3">{{ botStore.countTotal() }} Ft</td>
+                <td class="text-end fw-bold fs-4 text-success pt-3">{{ cartStore.countTotal() }} Ft</td>
                 <td></td>
               </tr>
             </tfoot>
@@ -78,9 +82,9 @@ const validCartItems = computed(() => {
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
-          <button @click="botStore.emptyCart()" class="btn btn-outline-danger">🗑️ Kosár ürítése</button>
-          <div v-if="botStore.token">
-             <button @click="botStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">Rendelés elküldése 🚀</button>
+          <button @click="cartStore.emptyCart()" class="btn btn-outline-danger">🗑️ Kosár ürítése</button>
+          <div v-if="userStore.token">
+             <button @click="cartStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">Rendelés elküldése 🚀</button>
           </div>
           <div v-else>
             <RouterLink to="/login" class="btn btn-warning shadow fw-bold">🔑 Jelentkezz be!</RouterLink>

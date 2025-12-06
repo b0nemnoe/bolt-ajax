@@ -2,7 +2,7 @@
   <div class="container mt-4">
     <h1 class="mb-4">📦 Rendelések Kezelése</h1>
 
-    <div v-if="botStore.adminOrders.length === 0" class="alert alert-info">
+    <div v-if="orderStore.adminOrders.length === 0" class="alert alert-info">
       Nincs megjeleníthető rendelés.
     </div>
 
@@ -18,7 +18,7 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="order in botStore.adminOrders" :key="order._id">
+          <tr v-for="order in orderStore.adminOrders" :key="order._id">
             <td>{{ new Date(order.date).toLocaleString('hu-HU') }}</td>
             
             <td>
@@ -41,7 +41,7 @@
                 class="form-select form-select-sm" 
                 :class="getStatusColor(order.status)"
                 :value="order.status"
-                @change="botStore.updateOrderStatus(order._id, $event.target.value)"
+                @change="orderStore.updateOrderStatus(order._id, $event.target.value)"
               >
                 <option value="Feldolgozás alatt">Feldolgozás alatt</option>
                 <option value="Kiszállítva">Kiszállítva</option>
@@ -58,12 +58,12 @@
 
 <script setup>
 import { onMounted } from 'vue'
-import { useBotStore } from '@/stores/bot'
+import { useOrderStore } from '@/stores/order.js'
 
-const botStore = useBotStore()
+const orderStore = useOrderStore()
 
 onMounted(() => {
-  botStore.fetchAdminOrders()
+  orderStore.fetchAdminOrders()
 })
 
 const getStatusColor = (status) => {
