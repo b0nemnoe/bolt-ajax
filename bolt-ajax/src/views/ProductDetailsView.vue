@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed, watch } from 'vue'
 import { useRoute, RouterLink } from 'vue-router'
 import { BACKEND_URL } from '@/utils/axios.js'
 import { useProductStore } from '@/stores/product.js'
@@ -14,9 +14,17 @@ const newRating = ref(5)
 const newComment = ref('')
 const editingReviewId = ref(null)
 
+const loadProduct = (id) => {
+  productStore.fetchProductById(id)
+}
+
 onMounted(() => {
-  const productId = route.params.id
-  productStore.fetchProductById(productId)
+  loadProduct(route.params.id)
+})
+
+watch(() => route.params.id, (newId) => {
+  loadProduct(newId)
+  window.scrollTo({ top: 0, behavior: 'smooth' })
 })
 
 const getImageUrl = (imageName) => {
@@ -71,11 +79,22 @@ const confirmDelete = (reviewId) => {
     if (editingReviewId.value === reviewId) cancelEdit()
   }
 }
+
+const relatedProducts = computed(() => {
+  if (!productStore.currentProduct || !productStore.products.length) return []
+  
+  return productStore.products
+    .filter(p => 
+      p.category === productStore.currentProduct.category && 
+      p.id !== productStore.currentProduct.id
+    )
+    .slice(0, 4)
+})
+
 </script>
 
 <template>
-  <div class="container mt-5">
-    
+  <div class="container mt-5"> 
     <div v-if="productStore.isLoading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status"></div>
       <p class="mt-2">Termék betöltése...</p>
@@ -140,6 +159,23 @@ const confirmDelete = (reviewId) => {
           <RouterLink to="/" class="btn btn-outline-secondary">
             ← Vissza a termékekhez
           </RouterLink>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="relatedProducts.length > 0" class="mt-5">
+      <h3 class="mb-4">Hasonló termékek</h3>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
+        <div class="col" v-for="rp in relatedProducts" :key="rp.id || rp._id">
+          <div class="card h-100 shadow-sm border-0 product-card">
+            <RouterLink :to="{ name: 'product-details', params: { id: rp.id || rp._id } }" class="text-decoration-none text-dark">
+                <img :src="getImageUrl(rp.image)" class="card-img-top" style="height: 150px; object-fit: cover;">
+                <div class="card-body">
+                  <h6 class="card-title text-truncate">{{ rp.name }}</h6>
+                  <p class="card-text text-primary fw-bold">{{ rp.price }} Ft</p>
+                </div>
+            </RouterLink>
+          </div>
         </div>
       </div>
     </div>
