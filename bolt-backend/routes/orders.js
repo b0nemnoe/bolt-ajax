@@ -5,6 +5,7 @@ const admin = require('../middleware/admin');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const sendOrderConfirmation = require('../utils/emailService');
 
 router.post('/', auth, async (req, res) => {
     const { items, totalPrice } = req.body;
@@ -21,6 +22,12 @@ router.post('/', auth, async (req, res) => {
             await Product.findByIdAndUpdate(item.productId, {
                 $inc: { store: -item.quantity }
             });
+        }
+
+        const user = await User.findById(req.user.id);
+        
+        if (user && user.email) {
+            sendOrderConfirmation(user.email, savedOrder);
         }
 
         res.status(201).json(savedOrder);
