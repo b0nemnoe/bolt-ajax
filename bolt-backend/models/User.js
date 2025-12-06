@@ -15,6 +15,9 @@ const UserSchema = new mongoose.Schema({
         type: Boolean,
         default: false // Alapból nem admin
     },
+    name: { type: String, default: '' },
+    address: { type: String, default: '' },
+    
     wishlist: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'

@@ -418,6 +418,30 @@ export const useBotStore = defineStore("bot", () => {
       .catch(() => toast.error("Hiba a törléskor"))
   }
 
+  const updateProfile = async (profileData) => {
+    try {
+      const response = await axios.put(`${API_URL}/auth/profile`, profileData)
+      
+      user.value = { ...user.value, ...response.data }
+      localStorage.setItem('user', JSON.stringify(user.value))
+      
+      toast.success("Profil adatok mentve! 💾")
+    } catch (error) {
+      toast.error("Hiba a mentéskor!")
+    }
+  }
+
+  const changePassword = async (passwords) => {
+    try {
+      await axios.put(`${API_URL}/auth/password`, passwords)
+      toast.success("Jelszó megváltoztatva! 🔒")
+      return true
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Hiba történt!")
+      return false
+    }
+  }
+
   watch(cart, (newCart) => {
     localStorage.setItem("cart", JSON.stringify(newCart))
   }, { deep: true })
@@ -461,5 +485,7 @@ export const useBotStore = defineStore("bot", () => {
     fetchAdminOrders, 
     updateOrderStatus,
     fetchProductById,
+    updateProfile,
+    changePassword,
   }
 })

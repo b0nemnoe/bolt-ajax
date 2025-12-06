@@ -1,26 +1,22 @@
-// routes/auth.js
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
 
-// --- REGISZTRÁCIÓ (POST /api/auth/register) ---
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // 1. Megnézzük, létezik-e már
         let user = await User.findOne({ email });
         if (user) {
             return res.status(400).json({ message: 'Ez az email már foglalt!' });
         }
 
-        // 2. Jelszó titkosítása
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // 3. Felhasználó létrehozása
         user = new User({
             email,
             password: hashedPassword
@@ -61,5 +57,50 @@ router.post('/login', async (req, res) => {
         res.status(500).json({ message: 'Szerverhiba' });
     }
 });
+
+router.put('/profile', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'Felhasználó nem található' });
+
+
+        if (req.body.name !== undefined) user.name = req.body.name;
+        if (req.body.address !== undefined) user.address = req.body.address;
+
+        await user.save();
+        
+        res.json({
+            id: user._id,
+            email: user.email,
+            isAdmin: user.isAdmin,
+            name: user.name,
+            address: user.address
+        });
+    } catch (err) {
+        res.status(500).json({ message: 'Hiba a mentéskor' });
+    }
+});
+
+
+router.put('/password', auth, async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        
+        const isMatch = await bcrypt.compare(currentPassword, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'A jelenlegi jelszó hibás!' });
+        }
+
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(newPassword, salt);
+        
+        await user.save();
+        res.json({ message: 'Jelszó sikeresen megváltoztatva!' });
+    } catch (err) {
+        res.status(500).json({ message: 'Hiba a jelszóváltáskor' });
+    }
+});
+
 
 module.exports = router;
