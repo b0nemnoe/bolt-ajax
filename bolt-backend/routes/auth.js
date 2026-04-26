@@ -10,8 +10,14 @@ const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const { body } = require('express-validator');
+const validate = require('../middleware/validate');
 
-router.post('/register', async (req, res) => {
+router.post('/register', [
+    body('email').isEmail().withMessage('Érvénytelen email cím!'),
+    body('password').isLength({ min: 6 }).withMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie!'),
+    validate
+], async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -36,7 +42,11 @@ router.post('/register', async (req, res) => {
     }
 });
 
-router.post('/login', async (req, res) => {
+router.post('/login', [
+    body('email').isEmail().withMessage('Érvénytelen email cím!'),
+    body('password').exists().withMessage('Jelszó megadása kötelező!'),
+    validate
+], async (req, res) => {
     const { email, password } = req.body;
 
     try {
@@ -53,7 +63,7 @@ router.post('/login', async (req, res) => {
     
         const token = jwt.sign(
             { id: user._id, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET || 'titkoskulcs123', 
+            process.env.JWT_SECRET, 
             { expiresIn: '1h' }
         );
 
@@ -93,7 +103,7 @@ router.post('/google', async (req, res) => {
 
         const token = jwt.sign(
             { id: user._id, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET || 'titkoskulcs123',
+            process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
@@ -133,7 +143,7 @@ router.post('/facebook', async (req, res) => {
 
         const token = jwt.sign(
             { id: user._id, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET || 'titkoskulcs123',
+            process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
 
@@ -145,7 +155,12 @@ router.post('/facebook', async (req, res) => {
     }
 });
 
-router.put('/profile', auth, async (req, res) => {
+router.put('/profile', [
+    auth,
+    body('name').optional().isString().trim().escape(),
+    body('address').optional().isString().trim().escape(),
+    validate
+], async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'Felhasználó nem található' });
@@ -169,7 +184,12 @@ router.put('/profile', auth, async (req, res) => {
 });
 
 
-router.put('/password', auth, async (req, res) => {
+router.put('/password', [
+    auth,
+    body('currentPassword').exists().withMessage('Jelenlegi jelszó megadása kötelező!'),
+    body('newPassword').isLength({ min: 6 }).withMessage('Az új jelszónak legalább 6 karakter hosszúnak kell lennie!'),
+    validate
+], async (req, res) => {
     const { currentPassword, newPassword } = req.body;
     try {
         const user = await User.findById(req.user.id);
@@ -189,7 +209,10 @@ router.put('/password', auth, async (req, res) => {
     }
 });
 
-router.post('/forgot-password', async (req, res) => {
+router.post('/forgot-password', [
+    body('email').isEmail().withMessage('Érvénytelen email cím!'),
+    validate
+], async (req, res) => {
     const { email } = req.body;
     try {
         const user = await User.findOne({ email });
@@ -213,7 +236,10 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
-router.post('/reset-password/:token', async (req, res) => {
+router.post('/reset-password/:token', [
+    body('password').isLength({ min: 6 }).withMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie!'),
+    validate
+], async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 

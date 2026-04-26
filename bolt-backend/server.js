@@ -7,7 +7,7 @@ const app = express();
 
 connectDB();
 
-app.use(cors());
+app.use(cors()); //elesiteskor csak a frontend domainrol fogadjon kereseket, majd javitani kell ha fix a deploy
 app.use(express.json());
 app.use('/uploads', express.static('uploads'));
 app.use('/api/products', require('./routes/products'));
