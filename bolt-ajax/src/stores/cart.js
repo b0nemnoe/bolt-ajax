@@ -24,25 +24,32 @@ export const useCartStore = defineStore("cart", () => {
         const targetProduct = product || (currentP && (currentP.id == id || currentP._id == id) ? currentP : null)
 
         if (!targetProduct) { toast.error("Hiba: Termék nem található"); return }
-        if (targetProduct.store === 0) { toast.error("Nincs készleten"); return }
+        
+        const currentQty = cart.value[id] || 0
+        if (currentQty >= targetProduct.store) {
+            toast.error("Nincs több készleten ebből a termékből! 📦")
+            return
+        }
 
         if (!cart.value) cart.value = {}
-        cart.value[id] = cart.value[id] ? cart.value[id] + 1 : 1;
+        cart.value[id] = currentQty + 1;
         
-        targetProduct.store-- 
-        
-        toast.success("Kosárhoz adva")
+        toast.success("Kosárhoz adva! 🛒")
     }
 
     const modifyQuantity = (id, op) => {
         const productStore = useProductStore()
         const product = productStore.products.find(p => p.id == id || p._id == id)
-        if (!product) return
+        
+        const currentP = productStore.currentProduct
+        const targetProduct = product || (currentP && (currentP.id == id || currentP._id == id) ? currentP : null)
+        
+        if (!targetProduct) return
 
         if (op === "+") {
-            if (product.store > 0) {
+            const currentQty = cart.value[id] || 0
+            if (currentQty < targetProduct.store) {
                 cart.value[id]++
-                product.store--
                 toast.success("Mennyiség növelve")
             } else {
                 toast.error("Nincs több készleten!")
@@ -52,28 +59,17 @@ export const useCartStore = defineStore("cart", () => {
                 deleteProductFromCart(id)
             } else {
                 cart.value[id]--
-                product.store++
                 toast.warning("Mennyiség csökkentve")
             }
         }
     }
 
     const deleteProductFromCart = (id) => {
-        const productStore = useProductStore()
-        const product = productStore.products.find(p => p.id == id || p._id == id)
-        if (product && cart.value[id]) { 
-            product.store += cart.value[id]
-        }
         delete cart.value[id]
         toast.error("Termék törölve a kosárból!")
     }
 
     const emptyCart = () => {
-        const productStore = useProductStore()
-        for (const key in cart.value) {
-            const p = productStore.products.find(prod => prod.id == key || prod._id == key)
-            if(p) p.store += cart.value[key]
-        }
         cart.value = {}
         toast.error("Kosár kiürítve")
     }

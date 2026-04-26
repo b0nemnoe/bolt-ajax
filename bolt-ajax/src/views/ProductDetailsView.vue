@@ -128,18 +128,18 @@ const relatedProducts = computed(() => {
         </h2>
 
         <div class="d-flex align-items-center mb-4">
-            <span class="badge p-2 fs-6" :class="productStore.currentProduct.store > 0 ? 'bg-success' : 'bg-danger'">
-                {{ productStore.currentProduct.store > 0 ? $t('productDetails.in_stock') : $t('productDetails.out_of_stock') }}
+            <span class="badge p-2 fs-6" :class="productStore.currentProduct.store > (cartStore.cart[productStore.currentProduct.id] || 0) ? 'bg-success' : 'bg-danger'">
+                {{ productStore.currentProduct.store > (cartStore.cart[productStore.currentProduct.id] || 0) ? $t('productDetails.in_stock') : $t('productDetails.out_of_stock') }}
             </span>
-            <span v-if="productStore.currentProduct.store > 0" class="ms-3 text-muted">
-                ({{ productStore.currentProduct.store }} {{ $t('productDetails.available') }})
+            <span v-if="productStore.currentProduct.store > (cartStore.cart[productStore.currentProduct.id] || 0)" class="ms-3 text-muted">
+                ({{ productStore.currentProduct.store - (cartStore.cart[productStore.currentProduct.id] || 0) }} {{ $t('productDetails.available') }})
             </span>
         </div>
 
         <div class="d-grid gap-2">
           <div class="d-flex gap-2">
             <button 
-              :disabled="productStore.currentProduct.store === 0" 
+              :disabled="productStore.currentProduct.store <= (cartStore.cart[productStore.currentProduct.id] || 0)" 
               @click="cartStore.addToCart(productStore.currentProduct.id)" 
               class="btn btn-primary btn-lg flex-grow-1"
             >
