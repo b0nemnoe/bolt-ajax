@@ -1,50 +1,50 @@
 <template>
     <div class="container mt-4">
-        <h1 class="text-center mb-4">Új termék rögzítése</h1>
+        <h1 class="text-center mb-4">{{ $t('admin.new_product_title') }}</h1>
         <form class="w-50 mx-auto card p-4 shadow" @submit.prevent="onSubmit">
             
             <div class="mb-3">
-                <label class="form-label">Termék neve</label>
-                <input class="form-control" type="text" v-model="name" required placeholder="Pl. Tej">
+                <label class="form-label">{{ $t('admin.name') }}</label>
+                <input class="form-control" type="text" v-model="name" required :placeholder="$t('admin.name_placeholder')">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Kategória</label>
+                <label class="form-label">{{ $t('admin.category') }}</label>
                 <select class="form-select" v-model="category" required>
-                    <option value="" disabled selected>Válassz kategóriát...</option>
-                    <option value="Étel">Étel</option>
-                    <option value="Ital">Ital</option>
-                    <option value="Édesség">Édesség</option>
-                    <option value="Vegyi áru">Vegyi áru</option>
+                    <option value="" disabled selected>{{ $t('admin.category_placeholder') }}</option>
+                    <option value="Étel">{{ $t('admin.cat_food') }}</option>
+                    <option value="Ital">{{ $t('admin.cat_drink') }}</option>
+                    <option value="Édesség">{{ $t('admin.cat_sweet') }}</option>
+                    <option value="Vegyi áru">{{ $t('admin.cat_chemical') }}</option>
                 </select>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Ár (Ft)</label>
-                <input class="form-control" type="number" v-model="price" required placeholder="Pl. 350" max="999999">
+                <label class="form-label">{{ $t('admin.price') }}</label>
+                <input class="form-control" type="number" v-model="price" required :placeholder="$t('admin.price_placeholder')" max="999999">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Egység</label>
-                <input class="form-control" type="text" v-model="unit" required placeholder="Pl. liter">
+                <label class="form-label">{{ $t('admin.unit') }}</label>
+                <input class="form-control" type="text" v-model="unit" required :placeholder="$t('admin.unit_placeholder')">
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Leírás</label>
+                <label class="form-label">{{ $t('admin.desc') }}</label>
                 <textarea class="form-control" v-model="desc" rows="2"></textarea>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Raktárkészlet</label>
+                <label class="form-label">{{ $t('admin.stock') }}</label>
                 <input class="form-control" type="number" v-model="store" required>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Termék képe</label>
+                <label class="form-label">{{ $t('admin.image') }}</label>
                 <input class="form-control" type="file" @change="onFileChange" accept="image/*">
             </div>
 
-            <button class="btn btn-success w-100" type="submit">Mentés</button>
+            <button class="btn btn-success w-100" type="submit">{{ $t('admin.save') }}</button>
         </form>
     </div>
 </template>

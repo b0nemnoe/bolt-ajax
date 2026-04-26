@@ -23,7 +23,7 @@ const isInWishlist = (id) => {
 
 <template>
   <div class="bolt-view-container"> 
-    <h1 class="mb-4 text-center">Termékek</h1>
+    <h1 class="mb-4 text-center">{{ $t('bolt.title') }}</h1>
 
     <!-- KERESŐ SÁV -->
     <div class="card p-3 mb-4 shadow-sm bg-light">
@@ -31,12 +31,12 @@ const isInWishlist = (id) => {
         <div class="col-md-6">
           <div class="input-group">
             <span class="input-group-text">🔍</span>
-            <input type="text" class="form-control" placeholder="Keresés..." v-model="productStore.searchQuery">
+            <input type="text" class="form-control" :placeholder="$t('bolt.search_placeholder')" v-model="productStore.searchQuery">
           </div>
         </div>
         <div class="col-md-3">
           <select class="form-select" v-model="productStore.selectedCategory">
-              <option value="all">Minden kategória</option>
+              <option value="all">{{ $t('bolt.filter_all') }}</option>
               <option v-for="cat in productStore.categories" :key="cat" :value="cat">
                   {{ cat === 'all' ? '' : cat }}
               </option>
@@ -44,15 +44,15 @@ const isInWishlist = (id) => {
         </div>
         <div class="col-md-3">
           <select class="form-select" v-model="productStore.sortOrder">
-            <option value="default">Rendezés: Alap</option>
-            <option value="asc">Ár: Növekvő</option>
-            <option value="desc">Ár: Csökkenő</option>
+            <option value="default">{{ $t('bolt.sort_default') }}</option>
+            <option value="asc">{{ $t('bolt.sort_asc') }}</option>
+            <option value="desc">{{ $t('bolt.sort_desc') }}</option>
           </select>
         </div>
         <div class="col-md-3 text-center text-md-start">
           <div class="form-check form-switch d-inline-block">
             <input class="form-check-input" type="checkbox" id="stockFilter" v-model="productStore.onlyInStock">
-            <label class="form-check-label ms-2" for="stockFilter">Raktáron</label>
+            <label class="form-check-label ms-2" for="stockFilter">{{ $t('bolt.in_stock') }}</label>
           </div>
         </div>
       </div>
@@ -60,15 +60,15 @@ const isInWishlist = (id) => {
 
     <div v-if="productStore.isLoading" class="text-center my-5">
       <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
-        <span class="visually-hidden">Töltés...</span>
+        <span class="visually-hidden">{{ $t('bolt.loading') }}</span>
       </div>
-      <p class="mt-2 text-muted">Termékek betöltése...</p>
+      <p class="mt-2 text-muted">{{ $t('bolt.loading') }}</p>
     </div>
 
     <div v-else class="row gap-4 justify-content-center">
       
       <div v-if="productStore.filteredProducts.length === 0" class="alert alert-warning text-center w-75">
-        Nincs találat. 😢
+        {{ $t('bolt.no_results') }}
       </div>
 
       <div v-for="p in productStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm product-card">
@@ -88,7 +88,7 @@ const isInWishlist = (id) => {
           <div class="d-flex justify-content-between align-items-center mt-3">
             <span class="fw-bold fs-5 text-primary">{{ p.price }} Ft</span>
             <span class="badge" :class="p.store > 0 ? 'bg-success' : 'bg-danger'">
-              {{ p.store > 0 ? `${p.store} ${p.unit}` : 'Elfogyott' }}
+              {{ p.store > 0 ? `${p.store} ${p.unit}` : $t('bolt.out_of_stock') }}
             </span>
           </div>
         </div>
@@ -101,8 +101,8 @@ const isInWishlist = (id) => {
       @click="cartStore.addToCart(p.id)" 
       class="btn btn-outline-primary flex-grow-1"
     >
-      <span v-if="p.store > 0">Kosárba &#128722;</span>
-      <span v-else>Nem rendelhető 🚫</span>
+      <span v-if="p.store > 0">{{ $t('bolt.add_to_cart') }}</span>
+      <span v-else>{{ $t('bolt.not_orderable') }}</span>
     </button>
     
     <button 

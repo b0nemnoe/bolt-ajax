@@ -1,17 +1,17 @@
 <template>
     <div class="container mt-4">
-        <h1 class="mb-4">Termékek kezelése</h1>
+        <h1 class="mb-4">{{ $t('admin.delete_product_title') }}</h1>
         
         <div class="table-responsive">
             <table class="table table-striped table-hover align-middle">
                 <thead class="table-dark">
                     <tr>
-                        <th>Név</th>
-                        <th>Ár</th>
-                        <th>Egység</th>
-                        <th>Leírás</th>
-                        <th>Készlet</th>
-                        <th class="text-center">Műveletek</th>
+                        <th>{{ $t('admin.col_name') }}</th>
+                        <th>{{ $t('admin.col_price') }}</th>
+                        <th>{{ $t('admin.col_unit') }}</th>
+                        <th>{{ $t('admin.col_desc') }}</th>
+                        <th>{{ $t('admin.col_stock') }}</th>
+                        <th class="text-center">{{ $t('admin.col_actions') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -19,14 +19,14 @@
                         
                         <template v-if="editingId === product.id">
                             <td>
-                                <input type="text" class="form-control mb-2" v-model="editData.name" placeholder="Név">
+                                <input type="text" class="form-control mb-2" v-model="editData.name" :placeholder="$t('admin.col_name')">
                                 
                                 <select class="form-select" v-model="editData.category">
-                                    <option value="" disabled selected>Válassz kategóriát...</option>
-                                    <option value="Étel">Étel</option>
-                                    <option value="Ital">Ital</option>
-                                    <option value="Édesség">Édesség</option>
-                                    <option value="Vegyi áru">Vegyi áru</option>
+                                    <option value="" disabled selected>{{ $t('admin.category_placeholder') }}</option>
+                                    <option value="Étel">{{ $t('admin.cat_food') }}</option>
+                                    <option value="Ital">{{ $t('admin.cat_drink') }}</option>
+                                    <option value="Édesség">{{ $t('admin.cat_sweet') }}</option>
+                                    <option value="Vegyi áru">{{ $t('admin.cat_chemical') }}</option>
                                 </select>
                             </td>
                             
@@ -37,10 +37,10 @@
                             
                             <td class="text-center">
                                 <button class="btn btn-success btn-sm me-2" @click="saveEdit(product.id)">
-                                    💾 Mentés
+                                    {{ $t('admin.save_edit') }}
                                 </button>
                                 <button class="btn btn-secondary btn-sm" @click="cancelEdit">
-                                    ❌ Mégse
+                                    {{ $t('admin.cancel_edit') }}
                                 </button>
                             </td>
                         </template>
@@ -48,14 +48,14 @@
                         <template v-else>
                             <td>
                                 <div class="fw-bold">{{ product.name }}</div>
-                                <span class="badge bg-info text-dark">{{ product.category || 'Nincs kategória' }}</span>
+                                <span class="badge bg-info text-dark">{{ product.category || $t('admin.no_category') }}</span>
                             </td>
                             <td>{{ product.price }}</td>
                             <td>{{ product.unit }}</td>
                             <td>{{ product.desc }}</td>
                             <td>
                                 <span :class="{'text-danger fw-bold': product.store === 0, 'text-success': product.store > 0}">
-                                    {{ product.store }} db
+                                    {{ product.store }} {{ $t('admin.pieces') }}
                                 </span>
                             </td>
                             <td class="text-center">
@@ -73,7 +73,7 @@
         </div>
         
         <div v-if="productStore.products.length === 0" class="alert alert-warning text-center">
-            Nincs megjeleníthető termék.
+            {{ $t('admin.no_products') }}
         </div>
     </div>
 </template>

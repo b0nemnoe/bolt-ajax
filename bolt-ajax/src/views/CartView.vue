@@ -32,12 +32,12 @@ const validCartItems = computed(() => {
 
 <template>
   <div class="container mt-4">
-    <h1 class="mb-4 text-center">🛒 Kosár tartalma</h1>
+    <h1 class="mb-4 text-center">{{ $t('cart.title') }}</h1>
 
     <div v-if="validCartItems.length === 0" class="text-center py-5">
       <div class="mb-3" style="font-size: 4rem;">🛍️</div>
-      <h3 class="text-muted">A kosarad jelenleg üres.</h3>
-      <RouterLink to="/" class="btn btn-primary mt-3 px-4 py-2">Irány vásárolni!</RouterLink>
+      <h3 class="text-muted">{{ $t('cart.empty') }}</h3>
+      <RouterLink to="/" class="btn btn-primary mt-3 px-4 py-2">{{ $t('cart.go_shop') }}</RouterLink>
     </div>
 
     <div v-else class="row justify-content-center">
@@ -47,10 +47,10 @@ const validCartItems = computed(() => {
           <table class="table table-hover align-middle mb-0 bg-white">
             <thead class="table-light">
               <tr>
-                <th style="width: 40%">Termék</th>
-                <th style="width: 15%">Egységár</th>
-                <th class="text-center" style="width: 20%">Mennyiség</th>
-                <th class="text-end" style="width: 15%">Összesen</th>
+                <th style="width: 40%">{{ $t('cart.product') }}</th>
+                <th style="width: 15%">{{ $t('cart.unit_price') }}</th>
+                <th class="text-center" style="width: 20%">{{ $t('cart.quantity') }}</th>
+                <th class="text-end" style="width: 15%">{{ $t('cart.total') }}</th>
                 <th style="width: 10%"></th>
               </tr>
             </thead>
@@ -82,17 +82,17 @@ const validCartItems = computed(() => {
             <div class="col-md-6">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Kuponkód 🎫</h5>
+                        <h5 class="card-title">{{ $t('cart.coupon_title') }}</h5>
                         
                         <div v-if="!cartStore.coupon" class="input-group mt-3">
-                            <input type="text" class="form-control" v-model="couponCode" placeholder="Írd be a kódot...">
-                            <button @click="cartStore.applyCoupon(couponCode)" class="btn btn-outline-primary">Beváltás</button>
+                            <input type="text" class="form-control" v-model="couponCode" :placeholder="$t('cart.coupon_placeholder')">
+                            <button @click="cartStore.applyCoupon(couponCode)" class="btn btn-outline-primary">{{ $t('cart.redeem') }}</button>
                         </div>
 
                         <div v-else class="alert alert-success mt-2 d-flex justify-content-between align-items-center mb-0">
                             <span>
                                 <strong>{{ cartStore.coupon.code }}</strong> 
-                                (-{{ cartStore.coupon.discountPercent }}%) aktiválva! 🎉
+                                (-{{ cartStore.coupon.discountPercent }}%) {{ $t('cart.activated') }}
                             </span>
                             <button @click="cartStore.removeCoupon" class="btn btn-sm ">❌</button>
                         </div>
@@ -104,16 +104,16 @@ const validCartItems = computed(() => {
                 <div class="card shadow-sm border-0 bg-light h-100">
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
-                            <span>Részösszeg:</span>
+                            <span>{{ $t('cart.subtotal') }}</span>
                             <span>{{ cartStore.originalTotal() }} Ft</span>
                         </div>
                         <div v-if="cartStore.coupon" class="d-flex justify-content-between mb-2 text-success">
-                            <span>Kedvezmény:</span>
+                            <span>{{ $t('cart.discount') }}</span>
                             <span>-{{ cartStore.discountAmount() }} Ft</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between fs-4 fw-bold">
-                            <span>Végösszeg:</span>
+                            <span>{{ $t('cart.final_total') }}</span>
                             <span class="text-primary">{{ cartStore.finalTotal() }} Ft</span>
                         </div>
                     </div>
@@ -123,13 +123,13 @@ const validCartItems = computed(() => {
         </div>
 
         <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
-          <button @click="cartStore.emptyCart()" class="btn btn-outline-danger">🗑️ Kosár ürítése</button>
+          <button @click="cartStore.emptyCart()" class="btn btn-outline-danger">{{ $t('cart.empty_cart_btn') }}</button>
           
           <div v-if="userStore.token">
-             <button @click="cartStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">Rendelés elküldése 🚀</button>
+             <button @click="cartStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">{{ $t('cart.checkout_btn') }}</button>
           </div>
           <div v-else>
-            <RouterLink to="/login" class="btn btn-warning shadow fw-bold">🔑 Jelentkezz be a rendeléshez!</RouterLink>
+            <RouterLink to="/login" class="btn btn-warning shadow fw-bold">{{ $t('cart.login_to_order') }}</RouterLink>
           </div>
         </div>
 

@@ -1,10 +1,10 @@
 <template>
   <div class="container mt-4">
-    <h1 class="text-center mb-4">❤️ Kedvenceim</h1>
+    <h1 class="text-center mb-4">{{ $t('wishlist.title') }}</h1>
 
     <div v-if="userStore.wishlist.length === 0" class="text-center py-5">
-      <h3>A kívánságlistád üres.</h3>
-      <RouterLink to="/" class="btn btn-primary mt-3">Böngészés</RouterLink>
+      <h3>{{ $t('wishlist.empty') }}</h3>
+      <RouterLink to="/" class="btn btn-primary mt-3">{{ $t('wishlist.browse') }}</RouterLink>
     </div>
 
     <div v-else class="row gap-4 justify-content-center">
@@ -16,7 +16,7 @@
           <h5 class="card-title">{{ p.name }}</h5>
           <p class="text-primary fw-bold">{{ p.price }} Ft</p>
           <button @click="userStore.toggleWishlist(p._id || p.id)" class="btn btn-outline-danger w-100">
-            Eltávolítás 💔
+            {{ $t('wishlist.remove') }}
           </button>
         </div>
       </div>

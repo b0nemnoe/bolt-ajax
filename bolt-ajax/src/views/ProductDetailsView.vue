@@ -1,5 +1,6 @@
 <script setup>
 import { onMounted, ref, computed, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, RouterLink } from 'vue-router'
 import { BACKEND_URL } from '@/utils/axios.js'
 import { useProductStore } from '@/stores/product.js'
@@ -13,6 +14,7 @@ const userStore = useUserStore()
 const newRating = ref(5)
 const newComment = ref('')
 const editingReviewId = ref(null)
+const { t } = useI18n()
 
 const loadProduct = (id) => {
   productStore.fetchProductById(id)
@@ -74,7 +76,7 @@ const submitReview = async () => {
 }
 
 const confirmDelete = (reviewId) => {
-  if (confirm("Biztosan törölni szeretnéd ezt az értékelést? 🗑️")) {
+  if (confirm(t('productDetails.confirm_delete'))) {
     productStore.deleteReview(reviewId)
     if (editingReviewId.value === reviewId) cancelEdit()
   }
@@ -97,7 +99,7 @@ const relatedProducts = computed(() => {
   <div class="container mt-5"> 
     <div v-if="productStore.isLoading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status"></div>
-      <p class="mt-2">Termék betöltése...</p>
+      <p class="mt-2">{{ $t('productDetails.loading') }}</p>
     </div>
 
     <div v-else-if="productStore.currentProduct" class="row g-5">
@@ -127,10 +129,10 @@ const relatedProducts = computed(() => {
 
         <div class="d-flex align-items-center mb-4">
             <span class="badge p-2 fs-6" :class="productStore.currentProduct.store > 0 ? 'bg-success' : 'bg-danger'">
-                {{ productStore.currentProduct.store > 0 ? 'Raktáron' : 'Elfogyott' }}
+                {{ productStore.currentProduct.store > 0 ? $t('productDetails.in_stock') : $t('productDetails.out_of_stock') }}
             </span>
             <span v-if="productStore.currentProduct.store > 0" class="ms-3 text-muted">
-                ({{ productStore.currentProduct.store }} db elérhető)
+                ({{ productStore.currentProduct.store }} {{ $t('productDetails.available') }})
             </span>
         </div>
 
@@ -141,13 +143,13 @@ const relatedProducts = computed(() => {
               @click="cartStore.addToCart(productStore.currentProduct.id)" 
               class="btn btn-primary btn-lg flex-grow-1"
             >
-              Kosárba teszem 🛒
+              {{ $t('productDetails.add_to_cart') }}
             </button>
 
             <button 
               @click="userStore.toggleWishlist(productStore.currentProduct.id)" 
               class="btn btn-outline-danger btn-lg"
-              title="Kedvencekhez adás"
+              :title="$t('productDetails.add_to_wishlist')"
             >
                <v-icon 
                   :name="isInWishlist(productStore.currentProduct.id) ? 'bi-heart-fill' : 'bi-heart'" 
@@ -157,14 +159,14 @@ const relatedProducts = computed(() => {
           </div>
           
           <RouterLink to="/" class="btn btn-outline-secondary">
-            ← Vissza a termékekhez
+            {{ $t('productDetails.back_to_products') }}
           </RouterLink>
         </div>
       </div>
     </div>
 
     <div v-if="relatedProducts.length > 0" class="mt-5">
-      <h3 class="mb-4">Hasonló termékek</h3>
+      <h3 class="mb-4">{{ $t('productDetails.related_products') }}</h3>
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
         <div class="col" v-for="rp in relatedProducts" :key="rp.id || rp._id">
           <div class="card h-100 shadow-sm border-0 product-card">
@@ -184,23 +186,23 @@ const relatedProducts = computed(() => {
 
     <div class="row justify-content-center">
       <div class="col-lg-8">
-        <h3 class="mb-4">Értékelések ({{ productStore.reviews.length }})</h3>
+        <h3 class="mb-4">{{ $t('productDetails.reviews') }} ({{ productStore.reviews.length }})</h3>
 
         <div v-if="userStore.token" id="review-form" class="card mb-4 shadow-sm" :class="{'border-primary': editingReviewId}">
           <div class="card-body">
             
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <h5 class="card-title mb-0">
-                    {{ editingReviewId ? 'Vélemény szerkesztése ✏️' : 'Írj véleményt! ✍️' }}
+                    {{ editingReviewId ? $t('productDetails.edit_review') : $t('productDetails.write_review') }}
                 </h5>
                 <button v-if="editingReviewId" @click="cancelEdit" class="btn btn-sm btn-secondary">
-                    Mégse
+                    {{ $t('productDetails.cancel') }}
                 </button>
             </div>
 
             <form @submit.prevent="submitReview">
               <div class="mb-3">
-                <label class="form-label me-2">Értékelés:</label>
+                <label class="form-label me-2">{{ $t('productDetails.rating') }}</label>
                 <div class="d-inline-block">
                   <span v-for="star in 5" :key="star" @click="newRating = star" style="cursor: pointer;">
                     <v-icon 
@@ -213,22 +215,22 @@ const relatedProducts = computed(() => {
               </div>
 
               <div class="mb-3">
-                <textarea v-model="newComment" class="form-control" rows="3" placeholder="Mi a véleményed a termékről?" required></textarea>
+                <textarea v-model="newComment" class="form-control" rows="3" :placeholder="$t('productDetails.review_placeholder')" required></textarea>
               </div>
 
               <button type="submit" class="btn" :class="editingReviewId ? 'btn-success' : 'btn-primary'">
-                  {{ editingReviewId ? 'Mentés 💾' : 'Küldés 📨' }}
+                  {{ editingReviewId ? $t('productDetails.save') : $t('productDetails.send') }}
               </button>
             </form>
           </div>
         </div>
         
         <div v-else class="alert alert-secondary text-center">
-          <router-link to="/login">Jelentkezz be</router-link>, hogy értékelést írhass!
+          <router-link to="/login">{{ $t('productDetails.login') }}</router-link> {{ $t('productDetails.login_to_review') }}
         </div>
 
         <div v-if="productStore.reviews.length === 0" class="text-muted text-center my-4">
-          Még nem érkezett értékelés. Legyél te az első!
+          {{ $t('productDetails.no_reviews') }}
         </div>
 
         <div v-else class="list-group list-group-flush">
@@ -245,7 +247,7 @@ const relatedProducts = computed(() => {
                   </span>
                 </div>
                 <small class="text-muted">
-                  <strong>{{ review.user?.email?.split('@')[0] || 'Ismeretlen' }}</strong> 
+                  <strong>{{ review.user?.email?.split('@')[0] || $t('productDetails.unknown_user') }}</strong> 
                   &bull; {{ new Date(review.date).toLocaleDateString() }}
                 </small>
               </div>
@@ -256,7 +258,7 @@ const relatedProducts = computed(() => {
                     v-if="userStore.user.id === review.user?._id || userStore.user.id === review.user"
                     @click="startEdit(review)" 
                     class="btn btn-sm btn-outline-primary border-0 me-1"
-                    title="Szerkesztés"
+                    :title="$t('productDetails.edit')"
                 >
                     <v-icon name="bi-pencil" />
                 </button>
@@ -264,7 +266,7 @@ const relatedProducts = computed(() => {
                 <button 
                     @click="confirmDelete(review._id)" 
                     class="btn btn-sm btn-outline-danger border-0"
-                    title="Törlés"
+                    :title="$t('productDetails.delete')"
                 >
                     <v-icon name="bi-trash" />
                 </button>

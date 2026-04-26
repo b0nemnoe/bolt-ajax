@@ -1,20 +1,20 @@
 <template>
   <div class="container mt-4">
-    <h1 class="mb-4">📦 Rendelések Kezelése</h1>
+    <h1 class="mb-4">{{ $t('admin.orders_title') }}</h1>
 
     <div v-if="orderStore.adminOrders.length === 0" class="alert alert-info">
-      Nincs megjeleníthető rendelés.
+      {{ $t('admin.no_orders') }}
     </div>
 
     <div v-else class="table-responsive shadow-sm rounded">
       <table class="table table-hover align-middle mb-0">
         <thead class="table-dark">
           <tr>
-            <th>Dátum</th>
-            <th>Vásárló</th>
-            <th>Összeg</th>
-            <th>Termékek</th>
-            <th>Státusz</th>
+            <th>{{ $t('admin.date') }}</th>
+            <th>{{ $t('admin.buyer') }}</th>
+            <th>{{ $t('admin.total') }}</th>
+            <th>{{ $t('admin.products') }}</th>
+            <th>{{ $t('admin.status') }}</th>
           </tr>
         </thead>
         <tbody>
@@ -22,7 +22,7 @@
             <td>{{ new Date(order.date).toLocaleString('hu-HU') }}</td>
             
             <td>
-                <div class="fw-bold">{{ order.user?.email || 'Ismeretlen' }}</div>
+                <div class="fw-bold">{{ order.user?.email || $t('admin.unknown') }}</div>
                 <small class="text-muted">ID: {{ order._id.slice(-6) }}...</small>
             </td>
 
@@ -43,10 +43,10 @@
                 :value="order.status"
                 @change="orderStore.updateOrderStatus(order._id, $event.target.value)"
               >
-                <option value="Feldolgozás alatt">Feldolgozás alatt</option>
-                <option value="Kiszállítva">Kiszállítva</option>
-                <option value="Teljesítve">Teljesítve</option>
-                <option value="Törölve">Törölve</option>
+                <option value="Feldolgozás alatt">{{ $t('admin.processing') }}</option>
+                <option value="Kiszállítva">{{ $t('admin.shipped') }}</option>
+                <option value="Teljesítve">{{ $t('admin.completed') }}</option>
+                <option value="Törölve">{{ $t('admin.cancelled') }}</option>
               </select>
             </td>
           </tr>

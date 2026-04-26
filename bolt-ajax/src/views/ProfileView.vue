@@ -1,44 +1,44 @@
 <template>
   <div class="container mt-4">
-    <h1 class="mb-4">Fiókom</h1>
+    <h1 class="mb-4">{{ $t('profile.title') }}</h1>
     
     <div class="row">
       <div class="col-lg-4 mb-4">
         
         <div class="card shadow-sm mb-4">
           <div class="card-header bg-primary text-white fw-bold">
-            👤 Személyes adatok
+            {{ $t('profile.personal_data') }}
           </div>
           <div class="card-body">
             <form @submit.prevent="saveProfile">
               <div class="mb-3">
-                <label class="form-label">Név</label>
-                <input type="text" class="form-control" v-model="profileData.name" placeholder="Pl. Kiss János">
+                <label class="form-label">{{ $t('profile.name') }}</label>
+                <input type="text" class="form-control" v-model="profileData.name" :placeholder="$t('profile.name_placeholder')">
               </div>
               <div class="mb-3">
-                <label class="form-label">Szállítási cím</label>
-                <textarea class="form-control" v-model="profileData.address" rows="2" placeholder="Pl. 1011 Budapest, Fő u. 1."></textarea>
+                <label class="form-label">{{ $t('profile.address') }}</label>
+                <textarea class="form-control" v-model="profileData.address" rows="2" :placeholder="$t('profile.address_placeholder')"></textarea>
               </div>
-              <button type="submit" class="btn btn-primary w-100">Adatok mentése 💾</button>
+              <button type="submit" class="btn btn-primary w-100">{{ $t('profile.save_data') }}</button>
             </form>
           </div>
         </div>
 
         <div class="card shadow-sm">
           <div class="card-header bg-warning text-dark fw-bold">
-            🔒 Jelszócsere
+            {{ $t('profile.password_change') }}
           </div>
           <div class="card-body">
             <form @submit.prevent="savePassword">
               <div class="mb-3">
-                <label class="form-label">Jelenlegi jelszó</label>
+                <label class="form-label">{{ $t('profile.current_password') }}</label>
                 <input type="password" class="form-control" v-model="passData.currentPassword" required>
               </div>
               <div class="mb-3">
-                <label class="form-label">Új jelszó</label>
+                <label class="form-label">{{ $t('profile.new_password') }}</label>
                 <input type="password" class="form-control" v-model="passData.newPassword" required>
               </div>
-              <button type="submit" class="btn btn-warning w-100">Jelszó módosítása 🔑</button>
+              <button type="submit" class="btn btn-warning w-100">{{ $t('profile.save_password') }}</button>
             </form>
           </div>
         </div>
@@ -48,12 +48,12 @@
       <div class="col-lg-8">
         <div class="card shadow-sm">
           <div class="card-header bg-success text-white fw-bold">
-            📦 Korábbi rendeléseim
+            {{ $t('profile.my_orders') }}
           </div>
           <div class="card-body">
             
             <div v-if="orderStore.myOrders.length === 0" class="alert alert-info m-0">
-              Még nem adtál le rendelést.
+              {{ $t('profile.no_orders') }}
             </div>
 
             <div v-else class="accordion" id="ordersAccordion">
@@ -74,7 +74,7 @@
                     <ul class="list-group list-group-flush">
                       <li v-for="item in order.items" :key="item.productId" class="list-group-item d-flex justify-content-between align-items-center">
                         {{ item.name }}
-                        <span class="badge bg-primary rounded-pill">{{ item.quantity }} db</span>
+                        <span class="badge bg-primary rounded-pill">{{ item.quantity }} {{ $t('profile.pieces') }}</span>
                       </li>
                     </ul>
                   </div>
