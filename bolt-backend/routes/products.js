@@ -28,18 +28,56 @@ const storage = new CloudinaryStorage({
 
 const upload = multer({ storage: storage });
 
+router.get('/categories', async (req, res) => {
+    try {
+        const categories = await Product.distinct('category');
+        const validCategories = categories.filter(c => c).sort();
+        res.json(validCategories);
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+});
+
 router.get('/', async (req, res) => {
-    console.log("--> GET /api/products hívás érkezett!");
+    console.log("--> GET /api/products hívás érkezett (pagination)!");
     
     try {
-        if (!Product) {
-            console.error("HIBA: A Product modell nincs betöltve!");
-            throw new Error("A Product modell hiányzik");
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 12;
+        const search = req.query.search || '';
+        const category = req.query.category || 'all';
+        const sort = req.query.sort || 'default';
+        const inStock = req.query.inStock === 'true';
+
+        let query = {};
+        
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { desc: { $regex: search, $options: 'i' } }
+            ];
         }
 
-        console.log("--> Adatbázis lekérdezés indítása...");
-        const products = await Product.find();
-        console.log(`--> Siker! Talált termékek száma: ${products.length}`);
+        if (category !== 'all') {
+            query.category = category;
+        }
+
+        if (inStock) {
+            query.store = { $gt: 0 };
+        }
+
+        let sortOption = {};
+        if (sort === 'asc') sortOption.price = 1;
+        else if (sort === 'desc') sortOption.price = -1;
+        else sortOption._id = -1; // default sort latest first
+
+        const skip = (page - 1) * limit;
+
+        const totalProducts = await Product.countDocuments(query);
+        const products = await Product.find(query)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit);
 
         const transformed = products.map(p => ({
             id: p._id,
@@ -51,7 +89,13 @@ router.get('/', async (req, res) => {
             price: p.price,
             image: p.image
         }));
-        res.json(transformed);
+        
+        res.json({
+            products: transformed,
+            currentPage: page,
+            totalPages: Math.ceil(totalProducts / limit) || 1,
+            totalProducts
+        });
     } catch (err) {
         console.error("!!! VÉGZETES HIBA A LEKÉRDEZÉSKOR !!!");
         console.error(err); 

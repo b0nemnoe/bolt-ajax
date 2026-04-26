@@ -1,4 +1,5 @@
 <script setup>
+import { watch, onMounted } from 'vue'
 import { BACKEND_URL } from '@/utils/axios.js'
 
 import { useProductStore } from '@/stores/product.js'
@@ -18,6 +19,21 @@ const getImageUrl = (imageName) => {
 const isInWishlist = (id) => {
     return userStore.wishlist.some(p => (p._id == id || p.id == id))
 }
+
+onMounted(() => {
+    productStore.loadCategories()
+})
+
+let timeout
+watch(
+  () => [productStore.searchQuery, productStore.selectedCategory, productStore.sortOrder, productStore.onlyInStock],
+  () => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => {
+      productStore.loadAll(1)
+    }, 300)
+  }
+)
 
 </script>
 
@@ -120,6 +136,25 @@ const isInWishlist = (id) => {
 </div>
       </div>
     </div>
+    
+    <div v-if="productStore.totalPages > 1 && !productStore.isLoading" class="d-flex justify-content-center mt-5 mb-4">
+      <nav aria-label="Page navigation">
+        <ul class="pagination">
+          <li class="page-item" :class="{ disabled: productStore.currentPage === 1 }">
+            <button class="page-link" @click="productStore.loadAll(productStore.currentPage - 1)">Előző</button>
+          </li>
+          
+          <li v-for="page in productStore.totalPages" :key="page" class="page-item" :class="{ active: productStore.currentPage === page }">
+            <button class="page-link" @click="productStore.loadAll(page)">{{ page }}</button>
+          </li>
+          
+          <li class="page-item" :class="{ disabled: productStore.currentPage === productStore.totalPages }">
+            <button class="page-link" @click="productStore.loadAll(productStore.currentPage + 1)">Következő</button>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
   </div>
 </template>
 

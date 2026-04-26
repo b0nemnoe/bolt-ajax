@@ -2,17 +2,26 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
+
+app.set('trust proxy', 1);
+
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Túl sok kérés érkezett erről az IP címről. Kérjük, próbáld újra később.'
+});
 
 connectDB();
 
 app.use(cors()); //elesiteskor csak a frontend domainrol fogadjon kereseket, majd javitani kell ha fix a deploy
 app.use(express.json());
+app.use('/api/', globalLimiter);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/products', require('./routes/products'));
 app.use('/api/auth', require('./routes/auth'));
-app.use('/api/orders', require('./routes/orders'));
 app.use('/api/orders', require('./routes/orders'));
 app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/reviews', require('./routes/reviews'));

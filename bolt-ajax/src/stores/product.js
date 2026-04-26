@@ -18,33 +18,40 @@ export const useProductStore = defineStore("product", () => {
     const sortOrder = ref('default')
     const selectedCategory = ref('all')
 
-    const categories = computed(() => {
-        if (!products.value) return []
-        const cats = new Set(products.value.map(p => p.category).filter(c => c))
-        return ['all', ...cats]
-    })
+    const categories = ref(['all'])
+    const currentPage = ref(1)
+    const totalPages = ref(1)
+    const totalProducts = ref(0)
 
-    const filteredProducts = computed(() => {
-        if (!products.value) return []
-        let result = products.value.filter(p => {
-            const term = searchQuery.value.toLowerCase()
-            const matchesSearch = p.name.toLowerCase().includes(term) || (p.desc && p.desc.toLowerCase().includes(term))
-            const matchesStock = onlyInStock.value ? p.store > 0 : true
-            const matchesCategory = selectedCategory.value === 'all' || p.category === selectedCategory.value
-            return matchesSearch && matchesStock && matchesCategory
-        })
-        if (sortOrder.value === 'asc') return [...result].sort((a, b) => a.price - b.price)
-        if (sortOrder.value === 'desc') return [...result].sort((a, b) => b.price - a.price)
-        return result
-    })
+    const filteredProducts = computed(() => products.value)
+
+    const loadCategories = async () => {
+        try {
+            const response = await $axios.get('/products/categories')
+            categories.value = ['all', ...response.data]
+        } catch (error) {
+            console.error('Kategóriák betöltése sikertelen')
+        }
+    }
 
     // Product load
     
-    const loadAll = async () => {
+    const loadAll = async (page = 1) => {
         isLoading.value = true;
         try {
-            const response = await $axios.get('/products')
-            products.value = response.data || []
+            const params = {
+                page: page,
+                limit: 12,
+                search: searchQuery.value,
+                category: selectedCategory.value,
+                sort: sortOrder.value,
+                inStock: onlyInStock.value
+            }
+            const response = await $axios.get('/products', { params })
+            products.value = response.data.products || []
+            currentPage.value = response.data.currentPage || 1
+            totalPages.value = response.data.totalPages || 1
+            totalProducts.value = response.data.totalProducts || 0
         } catch (error) {
             toast.error("Nem sikerült betölteni a termékeket!")
         } finally {
@@ -138,8 +145,8 @@ export const useProductStore = defineStore("product", () => {
     return { 
         products, currentProduct, reviews, isLoading, 
         searchQuery, onlyInStock, sortOrder, selectedCategory, 
-        categories, filteredProducts, 
-        loadAll, fetchProductById, 
+        categories, filteredProducts, currentPage, totalPages, totalProducts,
+        loadAll, loadCategories, fetchProductById, 
         fetchReviews, addReview, updateReview, deleteReview, 
         saveProduct, updateProduct, deleteProductFromDb 
     }

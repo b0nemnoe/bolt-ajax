@@ -12,8 +12,16 @@ const axios = require('axios');
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
+const rateLimit = require('express-rate-limit');
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 5,
+    message: { message: 'Túl sok próbálkozás! Kérjük, várj 15 percet.' }
+});
 
 router.post('/register', [
+    authLimiter,
     body('email').isEmail().withMessage('Érvénytelen email cím!'),
     body('password').isLength({ min: 6 }).withMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie!'),
     validate
@@ -43,6 +51,7 @@ router.post('/register', [
 });
 
 router.post('/login', [
+    authLimiter,
     body('email').isEmail().withMessage('Érvénytelen email cím!'),
     body('password').exists().withMessage('Jelszó megadása kötelező!'),
     validate
@@ -74,7 +83,7 @@ router.post('/login', [
     }
 });
 
-router.post('/google', async (req, res) => {
+router.post('/google', authLimiter, async (req, res) => {
     const { credential } = req.body;
     try {
         const ticket = await googleClient.verifyIdToken({
@@ -115,7 +124,7 @@ router.post('/google', async (req, res) => {
     }
 });
 
-router.post('/facebook', async (req, res) => {
+router.post('/facebook', authLimiter, async (req, res) => {
     const { accessToken } = req.body;
     try {
         const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`);
@@ -210,6 +219,7 @@ router.put('/password', [
 });
 
 router.post('/forgot-password', [
+    authLimiter,
     body('email').isEmail().withMessage('Érvénytelen email cím!'),
     validate
 ], async (req, res) => {
@@ -237,6 +247,7 @@ router.post('/forgot-password', [
 });
 
 router.post('/reset-password/:token', [
+    authLimiter,
     body('password').isLength({ min: 6 }).withMessage('A jelszónak legalább 6 karakter hosszúnak kell lennie!'),
     validate
 ], async (req, res) => {
