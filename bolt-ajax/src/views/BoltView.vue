@@ -22,6 +22,7 @@ const isInWishlist = (id) => {
 
 onMounted(() => {
     productStore.loadCategories()
+    productStore.loadAll(1)
 })
 
 let timeout
