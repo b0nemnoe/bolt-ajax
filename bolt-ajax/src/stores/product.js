@@ -18,7 +18,7 @@ export const useProductStore = defineStore("product", () => {
     const sortOrder = ref('default')
     const selectedCategory = ref('all')
 
-    const categories = ref(['all'])
+    const categories = ref([])
     const currentPage = ref(1)
     const totalPages = ref(1)
     const totalProducts = ref(0)
@@ -28,7 +28,7 @@ export const useProductStore = defineStore("product", () => {
     const loadCategories = async () => {
         try {
             const response = await $axios.get('/products/categories')
-            categories.value = ['all', ...response.data]
+            categories.value = response.data
         } catch (error) {
             console.error('Kategóriák betöltése sikertelen')
         }

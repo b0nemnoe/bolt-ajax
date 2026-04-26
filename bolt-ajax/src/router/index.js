@@ -2,8 +2,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import BoltView from '../views/BoltView.vue'
 import LoginView from '../views/LoginView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import SettingsView from '../views/SettingsView.vue'
 import NewProductView from '../views/NewProductView.vue'
-import DeleteProductView from '../views/DeleteProductView.vue'
+import ManageProductsView from '../views/ManageProductsView.vue'
 import CartView from '../views/CartView.vue'
 import AdminOrdersView from '../views/AdminOrdersView.vue'
 import ProductDetailsView from '../views/ProductDetailsView.vue'
@@ -31,9 +32,9 @@ const router = createRouter({
       meta: { requiresAuth: true, requiresAdmin: true } 
     },
     {
-      path: '/delete',
-      name: 'delete',
-      component: DeleteProductView,
+      path: '/manage-products',
+      name: 'manage-products',
+      component: ManageProductsView,
       meta: { requiresAuth: true, requiresAdmin: true }
     },
     {
@@ -45,6 +46,12 @@ const router = createRouter({
       path: '/profile',
       name: 'profile',
       component: ProfileView,
+      meta: { requiresAuth: true }
+    },
+    {
+      path: '/settings',
+      name: 'settings',
+      component: SettingsView,
       meta: { requiresAuth: true }
     },
     {

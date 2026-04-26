@@ -3,6 +3,7 @@ import { ref } from "vue"
 import $axios from "@/utils/axios"
 import { useToast } from "vue-toastification"
 import router from '@/router'
+import { useCartStore } from "./cart"
 
 export const useUserStore = defineStore("user", () => {
     const user = ref(JSON.parse(localStorage.getItem('user')) || null)
@@ -23,6 +24,7 @@ export const useUserStore = defineStore("user", () => {
             
             toast.success("Sikeres bejelentkezés!")
             await fetchWishlist() // Betöltjük a kedvenceket
+            await useCartStore().fetchCart() // Betöltjük a kosarat
             
             if (user.value.isAdmin) router.push('/admin-orders')
             else router.push('/')
@@ -42,6 +44,7 @@ export const useUserStore = defineStore("user", () => {
             
             toast.success("Sikeres bejelentkezés Google-lel!")
             await fetchWishlist()
+            await useCartStore().fetchCart()
             
             if (user.value.isAdmin) router.push('/admin-orders')
             else router.push('/')
@@ -61,6 +64,7 @@ export const useUserStore = defineStore("user", () => {
             
             toast.success("Sikeres bejelentkezés Facebookkal!")
             await fetchWishlist()
+            await useCartStore().fetchCart()
             
             if (user.value.isAdmin) router.push('/admin-orders')
             else router.push('/')
@@ -85,6 +89,11 @@ export const useUserStore = defineStore("user", () => {
         wishlist.value = []
         localStorage.removeItem('token')
         localStorage.removeItem('user')
+        
+        const cartStore = useCartStore()
+        cartStore.cart = {}
+        localStorage.removeItem('cart')
+        
         router.push('/login')
     }
 

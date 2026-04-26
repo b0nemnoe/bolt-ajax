@@ -20,11 +20,16 @@ const UserSchema = new mongoose.Schema({
     address: { type: String, default: '' },
     resetPasswordToken: String,
     resetPasswordExpires: Date,
-    
+
     wishlist: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Product'
-    }]
+    }],
+    cart: {
+        type: Map,
+        of: Number,
+        default: {}
+    }
 });
 
 module.exports = mongoose.model('User', UserSchema);

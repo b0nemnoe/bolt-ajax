@@ -39,10 +39,9 @@ watch(
 
 <template>
   <div class="bolt-view-container"> 
-    <h1 class="mb-4 text-center">{{ $t('bolt.title') }}</h1>
+    <h1 class="mb-5 text-center fw-bold page-title">{{ $t('bolt.title') }}</h1>
 
-    <!-- KERESŐ SÁV -->
-    <div class="card p-3 mb-4 shadow-sm bg-light">
+    <div class="search-bar-container p-4 mb-5">
       <div class="row g-3 align-items-center">
         <div class="col-md-6">
           <div class="input-group">
@@ -54,7 +53,7 @@ watch(
           <select class="form-select" v-model="productStore.selectedCategory">
               <option value="all">{{ $t('bolt.filter_all') }}</option>
               <option v-for="cat in productStore.categories" :key="cat" :value="cat">
-                  {{ cat === 'all' ? '' : cat }}
+                  {{ cat }}
               </option>
           </select>
         </div>
@@ -87,37 +86,36 @@ watch(
         {{ $t('bolt.no_results') }}
       </div>
 
-      <div v-for="p in productStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 overflow-hidden shadow-sm product-card">
-        <RouterLink :to="{ name: 'product-details', params: { id: p.id } }">
+      <div v-for="p in productStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 product-card">
+        <RouterLink :to="{ name: 'product-details', params: { id: p.id } }" class="img-wrapper">
         <img 
           :src="getImageUrl(p.image)" 
-          class="card-img-top" 
-          style="height: 200px; object-fit: cover; cursor: pointer;"
+          class="card-img-top product-img" 
           alt="Termék kép"
         >
       </RouterLink>
-        <div class="card-body d-flex flex-column">
+        <div class="card-body d-flex flex-column px-4 pt-4">
           
-          <h5 class="card-title">{{ p.name }}</h5>
+          <h5 class="card-title product-title">{{ p.name }}</h5>
           
-          <p class="card-text text-muted small flex-grow-1">{{ p.desc }}</p>
-          <div class="d-flex justify-content-between align-items-center mt-3">
-            <span class="fw-bold fs-5 text-primary">{{ p.price }} Ft</span>
-            <span class="badge" :class="p.store > 0 ? 'bg-success' : 'bg-danger'">
+          <p class="card-text text-muted small flex-grow-1 product-desc">{{ p.desc }}</p>
+          <div class="d-flex justify-content-between align-items-center mt-4">
+            <span class="fw-bold fs-4 text-teal">{{ p.price }} Ft</span>
+            <span class="badge" :class="p.store > 0 ? 'stock-badge-success' : 'stock-badge-danger'">
               {{ p.store > 0 ? `${p.store} ${p.unit}` : $t('bolt.out_of_stock') }}
             </span>
           </div>
         </div>
         
-        <div class="card-footer bg-white border-top-0 pb-3">
+        <div class="card-footer bg-white border-top-0 pb-4 px-4">
   <div class="d-flex gap-2">
     
     <button 
       :disabled="p.store === 0" 
       @click="cartStore.addToCart(p.id)" 
-      class="btn btn-outline-primary flex-grow-1"
+      class="btn btn-teal flex-grow-1 fw-bold"
     >
-      <span v-if="p.store > 0">{{ $t('bolt.add_to_cart') }}</span>
+      <span v-if="p.store > 0">🛒 {{ $t('bolt.add_to_cart') }}</span>
       <span v-else>{{ $t('bolt.not_orderable') }}</span>
     </button>
     
@@ -159,6 +157,86 @@ watch(
 </template>
 
 <style scoped>
-.product-card { transition: transform 0.2s; }
-.product-card:hover { transform: translateY(-5px); }
+.page-title {
+  color: #1e293b;
+  letter-spacing: -0.5px;
+}
+.search-bar-container {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+.product-card { 
+  border: none;
+  border-radius: 16px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  background: white;
+}
+.product-card:hover { 
+  transform: translateY(-8px); 
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+.img-wrapper {
+  overflow: hidden;
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  display: block;
+}
+.product-img {
+  height: 240px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+  cursor: pointer;
+}
+.product-card:hover .product-img {
+  transform: scale(1.05);
+}
+.product-title {
+  font-weight: 600;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+.product-desc {
+  color: #64748b !important;
+  line-height: 1.5;
+}
+.text-teal {
+  color: #0d9488;
+}
+.btn-teal {
+  background-color: #0d9488;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  transition: all 0.2s ease;
+}
+.btn-teal:hover:not(:disabled) {
+  background-color: #0f766e;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.2);
+}
+.btn-teal:disabled {
+  background-color: #e2e8f0;
+  color: #94a3b8;
+}
+.stock-badge-success {
+  background-color: #f0fdf4;
+  color: #166534;
+  border: 1px solid #bbf7d0;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
+.stock-badge-danger {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-weight: 500;
+  font-size: 0.8rem;
+}
 </style>

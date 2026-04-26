@@ -138,8 +138,45 @@ export const useCartStore = defineStore("cart", () => {
         }
     }
 
+    let syncTimeout = null
+    const syncCart = () => {
+        const userStore = useUserStore()
+        if (userStore.token) {
+            clearTimeout(syncTimeout)
+            syncTimeout = setTimeout(async () => {
+                try {
+                    await $axios.put('/auth/cart', { cart: cart.value })
+                } catch (err) {
+                    console.error("Hiba a kosár szinkronizálásakor")
+                }
+            }, 500)
+        }
+    }
+
+    const fetchCart = async () => {
+        const userStore = useUserStore()
+        if (userStore.token) {
+            try {
+                const response = await $axios.get('/auth/cart')
+                const dbCart = response.data || {}
+                
+                for (const key in dbCart) {
+                    if (cart.value[key]) {
+                        cart.value[key] = Math.max(cart.value[key], dbCart[key])
+                    } else {
+                        cart.value[key] = dbCart[key]
+                    }
+                }
+                syncCart() 
+            } catch (err) {
+                console.error("Hiba a kosár lekérésekor")
+            }
+        }
+    }
+
     watch(cart, (newCart) => {
         localStorage.setItem("cart", JSON.stringify(newCart))
+        syncCart()
     }, { deep: true })
 
     const applyCoupon = async (code) => {
@@ -161,5 +198,5 @@ export const useCartStore = defineStore("cart", () => {
     return { cart, coupon, 
         addToCart, modifyQuantity, deleteProductFromCart, emptyCart, 
         originalTotal, discountAmount, finalTotal, checkout, 
-        applyCoupon, removeCoupon }
+        applyCoupon, removeCoupon, fetchCart, syncCart }
 })

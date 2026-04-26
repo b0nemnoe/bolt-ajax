@@ -279,4 +279,27 @@ router.post('/reset-password/:token', [
     }
 });
 
+router.get('/cart', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'Felhasználó nem található' });
+        res.json(user.cart || {});
+    } catch (err) {
+        res.status(500).json({ message: 'Hiba a kosár lekérésekor' });
+    }
+});
+
+router.put('/cart', auth, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: 'Felhasználó nem található' });
+        
+        user.cart = req.body.cart;
+        await user.save();
+        res.json(user.cart);
+    } catch (err) {
+        res.status(500).json({ message: 'Hiba a kosár mentésekor' });
+    }
+});
+
 module.exports = router;

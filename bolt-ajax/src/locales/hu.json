@@ -9,7 +9,7 @@
     "wishlist": "❤️ Kívánságlista",
     "login": "Bejelentkezés",
     "my_account": "Fiókom",
-    "my_orders": "📜 Rendeléseim",
+    "my_orders": "Rendeléseim",
     "logout": "Kijelentkezés"
   },
   "bolt": {
@@ -71,7 +71,7 @@
     "current_password": "Jelenlegi jelszó",
     "new_password": "Új jelszó",
     "save_password": "Jelszó módosítása 🔑",
-    "my_orders": "📦 Korábbi rendeléseim",
+    "my_orders": "Korábbi rendeléseim",
     "no_orders": "Még nem adtál le rendelést.",
     "pieces": "db"
   },

@@ -150,7 +150,7 @@ router.post('/', [
     body('category').optional().isString().trim(),
     body('unit').optional().isString().trim(),
     body('desc').optional().isString().trim(),
-    body('store').optional().isString().trim(),
+    body('store').optional().isNumeric().withMessage('A készletnek számnak kell lennie!'),
     validate
 ], async (req, res) => {
     try {
@@ -188,7 +188,7 @@ router.put('/:id', [
     body('category').optional().isString().trim(),
     body('unit').optional().isString().trim(),
     body('desc').optional().isString().trim(),
-    body('store').optional().isString().trim(),
+    body('store').optional().isNumeric().withMessage('A készletnek számnak kell lennie!'),
     validate
 ], async (req, res) => {
     try {
