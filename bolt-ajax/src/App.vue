@@ -19,7 +19,11 @@ const cartItemCount = computed(() => {
   return Object.values(cartStore.cart).reduce((acc, qty) => acc + qty, 0)
 })
 
-const closeNavbar = () => {
+const closeNavbar = (e) => {
+  if (e.target.classList.contains('dropdown-toggle') || e.target.closest('.dropdown-toggle')) {
+    return
+  }
+
   const menu = document.getElementById('mainMenu')
   if (menu && menu.classList.contains('show')) {
     const toggler = document.querySelector('.navbar-toggler')
@@ -40,7 +44,7 @@ const closeNavbar = () => {
       </button>
 
       <div class="collapse navbar-collapse" id="mainMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0" @click="closeNavbar">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" @click="closeNavbar($event)">
           <li class="nav-item">
             <RouterLink class="nav-link" to="/" active-class="active">{{ $t('nav.products') }}</RouterLink>
           </li>
@@ -49,7 +53,7 @@ const closeNavbar = () => {
           </li>
         </ul>
 
-        <ul class="navbar-nav ms-auto align-items-center" @click="closeNavbar">
+        <ul class="navbar-nav ms-auto align-items-center" @click="closeNavbar($event)">
           
           <li class="nav-item dropdown me-3">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
