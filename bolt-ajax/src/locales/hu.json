@@ -137,6 +137,7 @@
     "pieces": "db",
     "no_products": "Nincs megjeleníthető termék.",
     "orders_title": "📦 Rendelések Kezelése",
+    "orders_count": "rendelés",
     "no_orders": "Nincs megjeleníthető rendelés.",
     "date": "Dátum",
     "buyer": "Vásárló",
