@@ -31,6 +31,44 @@ export const useUserStore = defineStore("user", () => {
         }
     }
 
+    const loginWithGoogle = async (credential) => {
+        try {
+            const response = await $axios.post('/auth/google', { credential })
+            token.value = response.data.token
+            user.value = response.data.user
+            
+            localStorage.setItem('token', token.value)
+            localStorage.setItem('user', JSON.stringify(user.value))
+            
+            toast.success("Sikeres bejelentkezés Google-lel!")
+            await fetchWishlist()
+            
+            if (user.value.isAdmin) router.push('/admin-orders')
+            else router.push('/')
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Hibás Google bejelentkezés!")
+        }
+    }
+
+    const loginWithFacebook = async (accessToken) => {
+        try {
+            const response = await $axios.post('/auth/facebook', { accessToken })
+            token.value = response.data.token
+            user.value = response.data.user
+            
+            localStorage.setItem('token', token.value)
+            localStorage.setItem('user', JSON.stringify(user.value))
+            
+            toast.success("Sikeres bejelentkezés Facebookkal!")
+            await fetchWishlist()
+            
+            if (user.value.isAdmin) router.push('/admin-orders')
+            else router.push('/')
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Hibás Facebook bejelentkezés!")
+        }
+    }
+
     const register = async (email, password) => {
         try {
             await $axios.post('/auth/register', { email, password })
@@ -121,5 +159,5 @@ export const useUserStore = defineStore("user", () => {
         }
     }
 
-    return { user, token, wishlist, login, register, logout, updateProfile, changePassword, fetchWishlist, toggleWishlist, forgotPassword, resetPassword }
+    return { user, token, wishlist, login, register, logout, updateProfile, changePassword, fetchWishlist, toggleWishlist, forgotPassword, resetPassword, loginWithGoogle, loginWithFacebook }
 })

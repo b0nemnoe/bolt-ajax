@@ -54,7 +54,10 @@
     "btn_register": "Register",
     "forgot_pass": "Forgot your password?",
     "no_account": "Don't have an account? Register!",
-    "has_account": "Already have an account? Log in!"
+    "has_account": "Already have an account? Log in!",
+    "login_google": "Log in with Google",
+    "login_facebook": "Log in with Facebook",
+    "or": "OR"
   },
   "profile": {
     "title": "My Account",

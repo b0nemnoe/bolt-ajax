@@ -22,7 +22,23 @@
         </div>
       </form>
 
-      <div class="text-center">
+      <div v-if="isLogin">
+        <div class="d-flex align-items-center my-3">
+          <hr class="flex-grow-1">
+          <span class="mx-2 text-muted small">{{ $t('login.or') }}</span>
+          <hr class="flex-grow-1">
+        </div>
+
+        <div class="d-grid gap-2 mb-4">
+          <GoogleLogin :callback="handleGoogleCallback" />
+          <button type="button" class="btn text-white fw-bold d-flex align-items-center justify-content-center" style="background-color: #1877F2;" @click="handleFacebookLogin">
+            <v-icon name="bi-facebook" scale="1.2" class="me-2"/>
+            {{ $t('login.login_facebook') }}
+          </button>
+        </div>
+      </div>
+
+      <div class="text-center mt-3">
         <a href="#" @click.prevent="isLogin = !isLogin">
           {{ isLogin ? $t('login.no_account') : $t('login.has_account') }}
         </a>
@@ -32,7 +48,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useUserStore } from '@/stores/user.js'
 
 const userStore = useUserStore()
@@ -46,5 +62,46 @@ const handleSubmit = () => {
   } else {
     userStore.register(email.value, password.value)
   }
+}
+
+const handleGoogleCallback = (response) => {
+  if (response.credential) {
+    userStore.loginWithGoogle(response.credential)
+  }
+}
+
+onMounted(() => {
+  // Betöltjük a Facebook SDK-t aszinkron módon, ha még nincs betöltve
+  if (!window.FB) {
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : import.meta.env.VITE_FACEBOOK_APP_ID || 'MOCK_APP_ID',
+        cookie     : true,
+        xfbml      : true,
+        version    : 'v19.0'
+      });
+    };
+    (function(d, s, id){
+       var js, fjs = d.getElementsByTagName(s)[0];
+       if (d.getElementById(id)) {return;}
+       js = d.createElement(s); js.id = id;
+       js.src = "https://connect.facebook.net/en_US/sdk.js";
+       fjs.parentNode.insertBefore(js, fjs);
+     }(document, 'script', 'facebook-jssdk'));
+  }
+})
+
+const handleFacebookLogin = () => {
+  if (!window.FB) {
+    console.error("A Facebook SDK még nem töltött be.");
+    return;
+  }
+  window.FB.login((response) => {
+    if (response.authResponse) {
+      userStore.loginWithFacebook(response.authResponse.accessToken)
+    } else {
+      console.log("A felhasználó megszakította a Facebook bejelentkezést.");
+    }
+  }, {scope: 'public_profile,email'});
 }
 </script>

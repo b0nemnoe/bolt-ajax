@@ -6,6 +6,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const auth = require('../middleware/auth');
+const { OAuth2Client } = require('google-auth-library');
+const axios = require('axios');
+
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 router.post('/register', async (req, res) => {
     const { email, password } = req.body;
@@ -57,6 +61,87 @@ router.post('/login', async (req, res) => {
 
     } catch (err) {
         res.status(500).json({ message: 'Szerverhiba' });
+    }
+});
+
+router.post('/google', async (req, res) => {
+    const { credential } = req.body;
+    try {
+        const ticket = await googleClient.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        const payload = ticket.getPayload();
+        const email = payload.email;
+        const googleId = payload.sub;
+        const name = payload.name;
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = new User({
+                email,
+                name,
+                googleId
+            });
+            await user.save();
+        } else if (!user.googleId) {
+            user.googleId = googleId;
+            if(!user.name) user.name = name;
+            await user.save();
+        }
+
+        const token = jwt.sign(
+            { id: user._id, isAdmin: user.isAdmin },
+            process.env.JWT_SECRET || 'titkoskulcs123',
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+
+    } catch (err) {
+        console.error('Google Auth Error:', err);
+        res.status(500).json({ message: 'Google bejelentkezés sikertelen' });
+    }
+});
+
+router.post('/facebook', async (req, res) => {
+    const { accessToken } = req.body;
+    try {
+        const { data } = await axios.get(`https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`);
+        
+        const { id, name, email } = data;
+        
+        if (!email) {
+            return res.status(400).json({ message: 'A Facebook fiókhoz nincs email cím rendelve.' });
+        }
+
+        let user = await User.findOne({ email });
+
+        if (!user) {
+            user = new User({
+                email,
+                name,
+                facebookId: id
+            });
+            await user.save();
+        } else if (!user.facebookId) {
+            user.facebookId = id;
+            if(!user.name) user.name = name;
+            await user.save();
+        }
+
+        const token = jwt.sign(
+            { id: user._id, isAdmin: user.isAdmin },
+            process.env.JWT_SECRET || 'titkoskulcs123',
+            { expiresIn: '1h' }
+        );
+
+        res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+
+    } catch (err) {
+        console.error('Facebook Auth Error:', err);
+        res.status(500).json({ message: 'Facebook bejelentkezés sikertelen' });
     }
 });
 

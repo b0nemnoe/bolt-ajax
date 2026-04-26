@@ -36,7 +36,9 @@ const cartItemCount = computed(() => {
           <li class="nav-item">
             <RouterLink class="nav-link" to="/" active-class="active">{{ $t('nav.products') }}</RouterLink>
           </li>
-          <li><RouterLink class="nav-link" to="/admin-orders" active-class="active">{{ $t('nav.manage_orders') }}</RouterLink></li>
+          <li v-if="userStore.user && userStore.user.isAdmin">
+            <RouterLink class="nav-link" to="/admin-orders" active-class="active">{{ $t('nav.manage_orders') }}</RouterLink>
+          </li>
         </ul>
 
         <ul class="navbar-nav ms-auto align-items-center">
@@ -89,7 +91,7 @@ const cartItemCount = computed(() => {
             <ul class="dropdown-menu dropdown-menu-end fade-down">
               <li><RouterLink class="dropdown-item" to="/profile">{{ $t('nav.my_orders') }}</RouterLink></li>
               <li><hr class="dropdown-divider"></li>
-              <li><RouterLink @click="userStore.logout" class="dropdown-item text-danger">{{ $t('nav.logout') }}</RouterLink></li>
+              <li><a href="#" @click.prevent="userStore.logout" class="dropdown-item text-danger">{{ $t('nav.logout') }}</a></li>
             </ul>
           </li>
 

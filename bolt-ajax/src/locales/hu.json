@@ -54,7 +54,10 @@
     "btn_register": "Regisztráció",
     "forgot_pass": "Elfelejtetted a jelszavad?",
     "no_account": "Nincs még fiókod? Regisztrálj!",
-    "has_account": "Már van fiókod? Jelentkezz be!"
+    "has_account": "Már van fiókod? Jelentkezz be!",
+    "login_google": "Belépés Google-lel",
+    "login_facebook": "Belépés Facebookkal",
+    "or": "VAGY"
   },
   "profile": {
     "title": "Fiókom",
