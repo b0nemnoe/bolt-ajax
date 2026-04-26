@@ -2,6 +2,7 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
 const Product = require('./models/Product');
+const Coupon = require('./models/Coupon');
 
 // Adatbázis kapcsolat
 mongoose.connect(process.env.MONGO_URI)
@@ -149,13 +150,21 @@ const products = [
   }
 ];
 
+const coupons = [
+  { code: 'START20', discountPercent: 20 },
+  { code: 'BOLT10', discountPercent: 10 },
+  { code: 'FREE50', discountPercent: 50 }
+];
+
 const importData = async () => {
   try {
     await Product.deleteMany({});
+    await Coupon.deleteMany({});
     console.log('Régi adatok törölve...');
 
     await Product.insertMany(products);
-    console.log('✅ Sikeres adatfeltöltés (15 új termék)!');
+    await Coupon.insertMany(coupons);
+    console.log('✅ Sikeres adatfeltöltés (15 termék és 3 kupon)!');
     
     process.exit();
   } catch (error) {

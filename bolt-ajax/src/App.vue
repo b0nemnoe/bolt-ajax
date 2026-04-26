@@ -18,6 +18,14 @@ const cartItemCount = computed(() => {
   if (!cartStore.cart) return 0
   return Object.values(cartStore.cart).reduce((acc, qty) => acc + qty, 0)
 })
+
+const closeNavbar = () => {
+  const menu = document.getElementById('mainMenu')
+  if (menu && menu.classList.contains('show')) {
+    const toggler = document.querySelector('.navbar-toggler')
+    if (toggler) toggler.click()
+  }
+}
 </script>
 
 <template>
@@ -32,7 +40,7 @@ const cartItemCount = computed(() => {
       </button>
 
       <div class="collapse navbar-collapse" id="mainMenu">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0" @click="closeNavbar">
           <li class="nav-item">
             <RouterLink class="nav-link" to="/" active-class="active">{{ $t('nav.products') }}</RouterLink>
           </li>
@@ -41,7 +49,7 @@ const cartItemCount = computed(() => {
           </li>
         </ul>
 
-        <ul class="navbar-nav ms-auto align-items-center">
+        <ul class="navbar-nav ms-auto align-items-center" @click="closeNavbar">
           
           <li class="nav-item dropdown me-3">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
