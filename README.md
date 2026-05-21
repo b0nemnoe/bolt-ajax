@@ -8,7 +8,13 @@ A modern, full-stack web store built with **Vue 3** and **Node.js/Express**, fea
 
 ## 📸 Screenshots
 
-> *Screenshots coming 
+<img width="1710" height="886" alt="image" src="https://github.com/user-attachments/assets/e77301e6-683e-4628-a3d2-03edbb0c9371" />
+
+<img width="1710" height="886" alt="image" src="https://github.com/user-attachments/assets/81d17ff6-d57b-4411-9ca5-e01c6448b53e" />
+
+<img width="1710" height="886" alt="image" src="https://github.com/user-attachments/assets/eefac586-0ee6-45c4-84d8-be0f1d226bd1" />
+
+
 
 -----
 
