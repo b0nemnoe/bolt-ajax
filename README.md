@@ -1,51 +1,87 @@
-🛒  Webshop Alkalmazás
-Ez a projekt egy modern, teljes körű (full-stack) e-kereskedelmi webalkalmazás, amely egy robusztus Node.js/Express backendből és egy reszponzív Vue 3 (Vite) frontendből áll. Az alkalmazás célja egy teljes értékű online vásárlási élmény biztosítása, beépített felhasználókezeléssel, termékkatalógussal, rendeléskezeléssel és számos egyéb kényelmi funkcióval.
+# 🛒 Bolt — Full-Stack E-Commerce Application
 
-✨ Főbb funkciók
-A rendszer a következő főbb modulokat és funkciókat tartalmazza:
+A modern, full-stack web store built with **Vue 3** and **Node.js/Express**, featuring a complete shopping experience with user authentication, product management, order handling, and more.
 
-Felhasználókezelés és Hitelesítés: * Hagyományos regisztráció és bejelentkezés jelszótitkosítással (Bcrypt) és JWT (JSON Web Token) alapú azonosítással.
+> 🔗 **Live Demo:** [bolt-ajax.netlify.app](https://zesty-jalebi-37f6d3.netlify.app)
 
-Beépített Google Login integráció (OAuth).
+-----
 
-Rate-limiting védelem a túlzott próbálkozások és támadások (pl. brute-force) ellen.
+## 📸 Screenshots
 
-Termékkatalógus: Termékek listázása, kategóriák kezelése, árak, készletinformációk és leírások megjelenítése. A termékképek kezelése és felhőalapú tárolása a Cloudinary segítségével történik.
+> *Screenshots coming 
 
-Kosár és Rendeléskezelés: Termékek kosárba helyezése, majd a rendelések teljes körű adminisztrációja és rögzítése az adatbázisban.
+-----
 
-Kívánságlista (Wishlist): A felhasználók elmenthetik a számukra szimpatikus termékeket későbbi vásárlás céljából.
+## ✨ Features
 
-Értékelési rendszer (Reviews): Vásárlói vélemények és értékelések leadása az egyes termékekhez.
+- **Authentication** — Register/login with JWT, Google OAuth, and bcrypt password hashing
+- **Brute-force protection** — Rate limiting on sensitive endpoints
+- **Product catalog** — Categories, pricing, stock info, and cloud-hosted images via Cloudinary
+- **Cart & Orders** — Add to cart, place orders, full order history
+- **Wishlist** — Save products for later
+- **Reviews** — Leave ratings and written reviews on products
+- **Coupons** — Apply discount codes at checkout
+- **Multilingual UI** — English and Hungarian support via `vue-i18n`
+- **Email notifications** — Transactional emails via Nodemailer
+- **Toast notifications** — Real-time feedback with Vue Toastification
 
-Kuponok és Kedvezmények: Kuponkódok érvényesítési és beváltási lehetősége.
+-----
 
-Többnyelvűség (i18n): Az alkalmazás felülete el van látva többnyelvű megjelenítéssel, jelenleg angol és magyar nyelven, a vue-i18n csomag segítségével.
+## 🛠️ Tech Stack
 
-Értesítések: Felhasználóbarát visszajelzések és értesítések (Toastification), valamint email küldési funkció a háttérben (Nodemailer).
+### Frontend
 
-🛠️ Alkalmazott Technológiák
-A projekt a legmodernebb webes technológiákra és könyvtárakra épül:
+|Technology                |Purpose             |
+|--------------------------|--------------------|
+|Vue.js 3 (Composition API)|UI framework        |
+|Vite                      |Build tool          |
+|Pinia                     |State management    |
+|Vue Router                |Client-side routing |
+|Axios                     |HTTP client         |
+|Bootstrap 5               |Styling             |
+|Vue I18n                  |Internationalization|
+|Vue3 Google Login         |Google OAuth        |
 
-Frontend (Kliens oldal):
+### Backend
 
-Keretrendszer: Vue.js 3 (Composition API) Vite környezetben
+|Technology             |Purpose                          |
+|-----------------------|---------------------------------|
+|Node.js + Express.js v5|Server & REST API                |
+|MongoDB + Mongoose     |Database & ODM                   |
+|JWT + Bcrypt.js        |Authentication & password hashing|
+|Google Auth Library    |OAuth verification               |
+|Multer + Cloudinary    |Image upload & cloud storage     |
+|Nodemailer             |Email sending                    |
+|express-validator      |Input validation                 |
+|Express Rate Limit     |Brute-force protection           |
 
-Állapotkezelés: Pinia
+-----
 
-Útválasztás (Routing): Vue Router
+## 🚀 Getting Started
 
-Dizájn és UI: Bootstrap 5, Oh-Vue-Icons
+### Prerequisites
 
-HTTP Kliens: Axios
+- Node.js >= 18
+- MongoDB instance (local or Atlas)
+- Cloudinary account
+- Google OAuth credentials
 
-Egyéb: Vue I18n (többnyelvűség), Vue Toastification (értesítések), Vue3 Google Login
+-----
 
-Backend (Szerver oldal): 
-  - Környezet és Keretrendszer: Node.js, Express.js (v5)
-  - Adatbázis: MongoDB a Mongoose objektum-relációs leképző (ORM) csomaggal
-  - Adatvalidáció: express-validator a bejövő kérések és adatok szigorú ellenőrzésére
-  - Konfiguráció és Egyéb: dotenv a szenzitív környezeti változók kezelésére, illetve axios a szerveroldali külső API hívásokhoz
-  - Biztonság és Autentikáció: JWT (jsonwebtoken), Bcrypt.js, Express Rate Limit, Google Auth Library, CORS
-  - Fájlkezelés: Multer & Cloudinary (képek felhőalapú tárolása)
-  - Email küldés: Nodemailer
+## 📁 Project Structure
+
+```
+bolt-ajax/
+├── bolt-ajax/        # Vue 3 frontend
+├── bolt-backend/     # Node.js/Express backend
+└── kepek/            # Project images
+```
+
+-----
+
+## 👤 Author
+
+**Németh Noel**
+
+- GitHub: [@noelnemeth](https://github.com/noelnemeth)
+- LinkedIn: [noel-németh](https://www.linkedin.com/in/noel-n%C3%A9meth-26a6873a7/)
