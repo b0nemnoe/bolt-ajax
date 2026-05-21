@@ -74,7 +74,6 @@ A modern, full-stack web store built with **Vue 3** and **Node.js/Express**, fea
 bolt-ajax/
 ├── bolt-ajax/        # Vue 3 frontend
 ├── bolt-backend/     # Node.js/Express backend
-└── kepek/            # Project images
 ```
 
 -----
