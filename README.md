@@ -2,7 +2,7 @@
 
 A modern, full-stack web store built with **Vue 3** and **Node.js/Express**, featuring a complete shopping experience with user authentication, product management, order handling, and more.
 
-> 🔗 **Live Demo:** [bolt-ajax.netlify.app](https://zesty-jalebi-37f6d3.netlify.app)
+> 🔗 **Live Demo:** [nemethnoelshop.netlify.app](https://nemethnoelshop.netlify.app)
 
 -----
 
