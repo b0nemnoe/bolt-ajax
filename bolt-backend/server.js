@@ -3,6 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
 const rateLimit = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -16,8 +17,12 @@ const globalLimiter = rateLimit({
 
 connectDB();
 
-app.use(cors()); //elesiteskor csak a frontend domainrol fogadjon kereseket, majd javitani kell ha fix a deploy
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://nemethnoelshop.netlify.app'],
+    credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser());
 app.use('/api/', globalLimiter);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/products', require('./routes/products'));

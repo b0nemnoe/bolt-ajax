@@ -10,7 +10,8 @@ const productStore = useProductStore()
 const cartStore = useCartStore()
 const userStore = useUserStore()
 
-onMounted(() => {
+onMounted(async () => {
+  await userStore.initAuth()
   productStore.loadAll()
 })
 
