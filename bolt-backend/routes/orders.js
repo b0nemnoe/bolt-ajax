@@ -10,7 +10,11 @@ const Coupon = require('../models/Coupon');
 const { sendOrderConfirmation } = require('../utils/emailService');
 
 router.post('/', auth, async (req, res) => {
-    const { items, couponCode } = req.body;
+    const { items, couponCode, shippingAddress } = req.body;
+    
+    if (!shippingAddress || shippingAddress.trim() === '') {
+        return res.status(400).json({ message: 'A szállítási cím megadása kötelező!' });
+    }
     
     if (!items || items.length === 0) {
         return res.status(400).json({ message: 'A rendelés üres!' });
@@ -66,7 +70,8 @@ router.post('/', auth, async (req, res) => {
         const newOrder = new Order({
             user: req.user.id,
             items: processedItems,
-            totalPrice: calculatedTotal
+            totalPrice: calculatedTotal,
+            shippingAddress: shippingAddress.trim()
         });
 
         const savedOrder = await newOrder.save({ session });

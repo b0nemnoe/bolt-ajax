@@ -102,16 +102,19 @@ export const useCartStore = defineStore("cart", () => {
         return originalTotal.value - discountAmount.value
     })
 
-    const checkout = async () => {
+    const checkout = async (shippingAddress) => {
+        if (!shippingAddress || shippingAddress.trim() === '') {
+            toast.error("Kérjük, add meg a szállítási címet!")
+            return
+        }
+        
         const userStore = useUserStore()
-        const productStore = useProductStore()
-
         if (!userStore.token) {
-            toast.error("A rendeléshez be kell jelentkezned!")
-            router.push('/login')
+            toast.warning("Jelentkezz be a rendeléshez!")
             return
         }
 
+        const productStore = useProductStore()
         const orderItems = []
         for (const id in cart.value) {
             const product = productStore.products.find(p => p._id == id)
@@ -130,7 +133,8 @@ export const useCartStore = defineStore("cart", () => {
         try {
             await $axios.post('/orders', {
                 items: orderItems,
-                couponCode: coupon.value ? coupon.value.code : null
+                couponCode: coupon.value ? coupon.value.code : null,
+                shippingAddress: shippingAddress.trim()
             })
             toast.success("Rendelés sikeresen leadva! 🚀")
             cart.value = {}

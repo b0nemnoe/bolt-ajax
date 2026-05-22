@@ -10,6 +10,7 @@ const productStore = useProductStore()
 const userStore = useUserStore()
 
 const couponCode = ref('')
+const shippingAddress = ref(userStore.user?.address || '')
 
 const getProduct = (id) => {
   if (!productStore.products || productStore.products.length === 0) return null
@@ -122,11 +123,21 @@ const validCartItems = computed(() => {
 
         </div>
 
+        <div v-if="userStore.token" class="card shadow-sm border-0 bg-light mt-4 mb-2">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Szállítási cím</h5>
+            <div class="mb-3">
+              <label class="form-label text-muted small">Ide fogjuk szállítani a rendelésed (Irányítószám, Város, Utca, Házszám)</label>
+              <textarea v-model="shippingAddress" class="form-control" rows="2" placeholder="Add meg a pontos szállítási címet..."></textarea>
+            </div>
+          </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
           <button @click="cartStore.emptyCart()" class="btn btn-outline-danger">{{ $t('cart.empty_cart_btn') }}</button>
           
           <div v-if="userStore.token">
-             <button @click="cartStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">{{ $t('cart.checkout_btn') }}</button>
+             <button @click="cartStore.checkout(shippingAddress)" class="btn btn-success btn-lg shadow fw-bold px-4">{{ $t('cart.checkout_btn') }}</button>
           </div>
           <div v-else>
             <RouterLink to="/login" class="btn btn-warning shadow fw-bold">{{ $t('cart.login_to_order') }}</RouterLink>

@@ -11,7 +11,7 @@ app.set('trust proxy', 1);
 
 const globalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 100,
+    max: process.env.NODE_ENV === 'production' ? 100 : 5000,
     message: 'Túl sok kérés érkezett erről az IP címről. Kérjük, próbáld újra később.'
 });
 

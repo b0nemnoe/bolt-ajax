@@ -5,9 +5,9 @@ import { useUserStore } from '@/stores/user'
 
 export const BACKEND_URL = import.meta.env.VITE_API_URL 
   ? import.meta.env.VITE_API_URL.replace('/api', '') 
-  : "http://localhost:3000";
+  : "";
 
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api"
+export const API_URL = import.meta.env.VITE_API_URL || "/api"
 
 const $axios = axios.create({
     baseURL: API_URL,
@@ -49,6 +49,7 @@ $axios.interceptors.response.use(
                 const userStore = useUserStore();
                 userStore.token = '';
                 userStore.user = null;
+                localStorage.removeItem('user');
                 toast.error("A munkamenet lejárt. Kérjük, jelentkezz be újra!")
                 router.push('/login');
                 return Promise.reject(error);

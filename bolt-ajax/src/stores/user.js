@@ -107,6 +107,8 @@ export const useUserStore = defineStore("user", () => {
             await useCartStore().fetchCart()
         } catch (error) {
             token.value = ''
+            user.value = null
+            localStorage.removeItem('user')
         }
     }
 

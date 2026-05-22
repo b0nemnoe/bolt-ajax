@@ -22,10 +22,11 @@ const generateRefreshToken = (user) => {
 };
 
 const setRefreshCookie = (res, token) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie('refreshToken', token, {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none',
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000
     });
 };
@@ -35,7 +36,7 @@ const rateLimit = require('express-rate-limit');
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 1000,
     message: { message: 'Túl sok próbálkozás! Kérjük, várj 15 percet.' }
 });
 
@@ -349,10 +350,11 @@ router.post('/refresh', async (req, res) => {
 });
 
 router.post('/logout', (req, res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('refreshToken', {
         httpOnly: true,
-        secure: true,
-        sameSite: 'none'
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
     });
     res.json({ message: 'Sikeres kijelentkezés' });
 });

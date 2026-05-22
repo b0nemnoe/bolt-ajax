@@ -37,6 +37,10 @@
                         <span class="badge bg-slate-200 text-slate-700 rounded-pill px-3 py-2">{{ item.quantity }} {{ $t('profile.pieces') }}</span>
                       </li>
                     </ul>
+                    <div v-if="order.shippingAddress" class="mt-3 p-3 bg-white rounded-3 shadow-sm border border-light">
+                      <div class="small text-muted mb-1 text-uppercase fw-bold" style="letter-spacing: 0.5px;">Szállítási cím</div>
+                      <div class="text-slate-800 fw-medium">📍 {{ order.shippingAddress }}</div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -54,10 +58,22 @@ import { onMounted } from 'vue'
 import 'bootstrap/dist/js/bootstrap.bundle.min.js'
 import { useOrderStore } from '@/stores/order.js'
 
+import { useUserStore } from '@/stores/user.js'
+
 const orderStore = useOrderStore()
+const userStore = useUserStore()
 
 onMounted(() => {
-  orderStore.fetchOrders()
+  if (userStore.token) {
+    orderStore.fetchOrders()
+  }
+})
+
+import { watch } from 'vue'
+watch(() => userStore.token, (newToken) => {
+  if (newToken) {
+    orderStore.fetchOrders()
+  }
 })
 
 const formatDate = (dateString) => {

@@ -32,6 +32,9 @@
               <td>
                 <div class="fw-bold text-dark">{{ order.user?.email || $t('admin.unknown') }}</div>
                 <div class="text-muted extra-small">ID: {{ order._id.slice(-8) }}</div>
+                <div v-if="order.shippingAddress" class="text-muted mt-1" style="font-size: 0.75rem;">
+                  📍 {{ order.shippingAddress }}
+                </div>
               </td>
 
               <td class="fw-bold text-teal">{{ order.totalPrice.toLocaleString() }} Ft</td>
@@ -69,6 +72,9 @@
             <div>
               <div class="fw-bold text-dark">{{ order.user?.email || $t('admin.unknown') }}</div>
               <div class="text-muted extra-small">{{ new Date(order.date).toLocaleString('hu-HU') }}</div>
+              <div v-if="order.shippingAddress" class="text-muted mt-1" style="font-size: 0.75rem;">
+                📍 {{ order.shippingAddress }}
+              </div>
             </div>
             <div class="text-teal fw-bold fs-5">{{ order.totalPrice.toLocaleString() }} Ft</div>
           </div>
@@ -104,10 +110,22 @@
 import { onMounted } from 'vue'
 import { useOrderStore } from '@/stores/order.js'
 
+import { useUserStore } from '@/stores/user.js'
+
 const orderStore = useOrderStore()
+const userStore = useUserStore()
 
 onMounted(() => {
-  orderStore.fetchAdminOrders()
+  if (userStore.token) {
+    orderStore.fetchAdminOrders()
+  }
+})
+
+import { watch } from 'vue'
+watch(() => userStore.token, (newToken) => {
+  if (newToken) {
+    orderStore.fetchAdminOrders()
+  }
 })
 
 const getStatusClass = (status) => {

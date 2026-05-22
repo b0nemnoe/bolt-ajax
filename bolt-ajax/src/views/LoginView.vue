@@ -22,7 +22,7 @@
         </div>
       </form>
 
-      <div v-if="isLogin">
+      <div v-show="isLogin">
         <div class="d-flex align-items-center my-3">
           <hr class="flex-grow-1">
           <span class="mx-2 text-muted small">{{ $t('login.or') }}</span>
@@ -30,7 +30,9 @@
         </div>
 
         <div class="d-grid gap-2 mb-4">
-          <GoogleLogin :callback="handleGoogleCallback" />
+          <div>
+            <GoogleLogin :callback="handleGoogleCallback" />
+          </div>
           <button type="button" class="btn text-white fw-bold d-flex align-items-center justify-content-center" style="background-color: #1877F2;" @click="handleFacebookLogin">
             <v-icon name="bi-facebook" scale="1.2" class="me-2"/>
             {{ $t('login.login_facebook') }}
@@ -86,7 +88,11 @@ onMounted(() => {
        if (d.getElementById(id)) {return;}
        js = d.createElement(s); js.id = id;
        js.src = "https://connect.facebook.net/en_US/sdk.js";
-       fjs.parentNode.insertBefore(js, fjs);
+       if (fjs && fjs.parentNode) {
+         fjs.parentNode.insertBefore(js, fjs);
+       } else {
+         d.head.appendChild(js);
+       }
      }(document, 'script', 'facebook-jssdk'));
   }
 })

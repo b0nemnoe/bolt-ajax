@@ -19,6 +19,10 @@ const OrderSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
+    shippingAddress: {
+        type: String,
+        required: true
+    },
     status: {
         type: String,
         default: 'Feldolgozás alatt',

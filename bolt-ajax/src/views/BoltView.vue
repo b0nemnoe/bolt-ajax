@@ -87,8 +87,8 @@ watch(
         {{ $t('bolt.no_results') }}
       </div>
 
-      <div v-for="p in productStore.filteredProducts" :key="p.id" class="card col-12 col-md-4 col-lg-3 p-0 product-card">
-        <RouterLink :to="{ name: 'product-details', params: { id: p.id } }" class="img-wrapper">
+      <div v-for="p in productStore.filteredProducts" :key="p._id" class="card col-12 col-md-4 col-lg-3 p-0 product-card">
+        <RouterLink :to="{ name: 'product-details', params: { id: p._id } }" class="img-wrapper">
         <img 
           :src="getImageUrl(p.image)" 
           class="card-img-top product-img" 
@@ -102,8 +102,8 @@ watch(
           <p class="card-text text-muted small flex-grow-1 product-desc">{{ p.desc }}</p>
           <div class="d-flex justify-content-between align-items-center mt-4">
             <span class="fw-bold fs-4 text-teal">{{ p.price }} Ft</span>
-            <span class="badge" :class="p.store > (cartStore.cart[p.id] || 0) ? 'stock-badge-success' : 'stock-badge-danger'">
-              {{ p.store > (cartStore.cart[p.id] || 0) ? `${p.store - (cartStore.cart[p.id] || 0)} ${p.unit}` : $t('bolt.out_of_stock') }}
+            <span class="badge" :class="p.store > (cartStore.cart[p._id] || 0) ? 'stock-badge-success' : 'stock-badge-danger'">
+              {{ p.store > (cartStore.cart[p._id] || 0) ? `${p.store - (cartStore.cart[p._id] || 0)} ${p.unit}` : $t('bolt.out_of_stock') }}
             </span>
           </div>
         </div>
@@ -112,21 +112,21 @@ watch(
   <div class="d-flex gap-2">
     
     <button 
-      :disabled="p.store <= (cartStore.cart[p.id] || 0)" 
-      @click="cartStore.addToCart(p.id)" 
+      :disabled="p.store <= (cartStore.cart[p._id] || 0)" 
+      @click="cartStore.addToCart(p._id)" 
       class="btn btn-teal flex-grow-1 fw-bold"
     >
-      <span v-if="p.store > (cartStore.cart[p.id] || 0)">🛒 {{ $t('bolt.add_to_cart') }}</span>
+      <span v-if="p.store > (cartStore.cart[p._id] || 0)">🛒 {{ $t('bolt.add_to_cart') }}</span>
       <span v-else>{{ $t('bolt.not_orderable') }}</span>
     </button>
     
     <button 
-      @click="userStore.toggleWishlist(p.id)" 
+      @click="userStore.toggleWishlist(p._id)" 
       class="btn btn-outline-danger"
       title="Hozzáadás a kedvencekhez"
     >
       <v-icon 
-        :name="isInWishlist(p.id) ? 'bi-heart-fill' : 'bi-heart'" 
+        :name="isInWishlist(p._id) ? 'bi-heart-fill' : 'bi-heart'" 
         scale="1.0"
       />
     </button>
