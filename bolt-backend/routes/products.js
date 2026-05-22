@@ -135,21 +135,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', [
     auth, 
     admin,
-    (req, res, next) => {
-        const uploadMiddleware = upload.single('image');
-        uploadMiddleware(req, res, (err) => {
-            if (err) {
-                console.error("!!! SÚLYOS HIBA A KÉPFELTÖLTÉSNÉL !!!");
-                console.error(JSON.stringify(err, null, 2));
-                return res.status(500).json({ 
-                    message: "Képfeltöltési hiba", 
-                    error: err.message || "Ismeretlen Cloudinary hiba",
-                    details: err
-                });
-            }
-            next();
-        });
-    },
+    upload.single('image'),
     body('name').notEmpty().withMessage('A termék neve kötelező!').trim(),
     body('price').isNumeric().withMessage('Az árnak számnak kell lennie!'),
     body('category').optional().isString().trim(),

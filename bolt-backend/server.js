@@ -32,6 +32,22 @@ app.use('/api/wishlist', require('./routes/wishlist'));
 app.use('/api/reviews', require('./routes/reviews'));
 app.use('/api/coupons', require('./routes/coupons'));
 
+app.use((err, req, res, next) => {
+    console.error("GLOBAL ERROR");
+    console.error(err.stack || err);
+    
+    if (err.name === 'MulterError' || (err.message && err.message.includes('Cloudinary'))) {
+        return res.status(500).json({ 
+            message: 'Képfeltöltési hiba',
+            error: err.message
+        });
+    }
+
+    res.status(err.status || 500).json({
+        message: err.message || 'Váratlan szerverhiba történt'
+    });
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
