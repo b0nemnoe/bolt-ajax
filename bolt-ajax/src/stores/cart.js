@@ -1,5 +1,5 @@
 import { defineStore } from "pinia"
-import { ref, watch } from "vue"
+import { ref, watch, computed } from "vue"
 import $axios from "@/utils/axios"
 import { useToast } from "vue-toastification"
 import { useProductStore } from "./product"
@@ -18,10 +18,10 @@ export const useCartStore = defineStore("cart", () => {
  
     const addToCart = (id) => {
         const productStore = useProductStore()
-        const product = productStore.products.find(p => p.id == id || p._id == id)
+        const product = productStore.products.find(p => p._id == id)
         
         const currentP = productStore.currentProduct
-        const targetProduct = product || (currentP && (currentP.id == id || currentP._id == id) ? currentP : null)
+        const targetProduct = product || (currentP && currentP._id == id ? currentP : null)
 
         if (!targetProduct) { toast.error("Hiba: Termék nem található"); return }
         
@@ -39,10 +39,10 @@ export const useCartStore = defineStore("cart", () => {
 
     const modifyQuantity = (id, op) => {
         const productStore = useProductStore()
-        const product = productStore.products.find(p => p.id == id || p._id == id)
+        const product = productStore.products.find(p => p._id == id)
         
         const currentP = productStore.currentProduct
-        const targetProduct = product || (currentP && (currentP.id == id || currentP._id == id) ? currentP : null)
+        const targetProduct = product || (currentP && currentP._id == id ? currentP : null)
         
         if (!targetProduct) return
 
@@ -74,24 +74,24 @@ export const useCartStore = defineStore("cart", () => {
         toast.error("Kosár kiürítve")
     }
 
-    const originalTotal = () => {
+    const originalTotal = computed(() => {
         const productStore = useProductStore()
         let total = 0
         for (const i in cart.value) {
-            const p = productStore.products.find(prod => prod.id == i || prod._id == i)
+            const p = productStore.products.find(prod => prod._id == i)
             if (p) total += cart.value[i] * p.price
         }
         return total
-    }
+    })
 
-    const discountAmount = () => {
+    const discountAmount = computed(() => {
         if (!coupon.value) return 0
-        return Math.round(originalTotal() * (coupon.value.discountPercent / 100))
-    }
+        return Math.round(originalTotal.value * (coupon.value.discountPercent / 100))
+    })
 
-    const finalTotal = () => {
-        return originalTotal() - discountAmount()
-    }
+    const finalTotal = computed(() => {
+        return originalTotal.value - discountAmount.value
+    })
 
     const checkout = async () => {
         const userStore = useUserStore()
@@ -105,7 +105,7 @@ export const useCartStore = defineStore("cart", () => {
 
         const orderItems = []
         for (const id in cart.value) {
-            const product = productStore.products.find(p => p.id == id || p._id == id)
+            const product = productStore.products.find(p => p._id == id)
             if (product) {
                 orderItems.push({
                     productId: id,

@@ -17,7 +17,7 @@ const getImageUrl = (imageName) => {
 }
 
 const isInWishlist = (id) => {
-    return userStore.wishlist.some(p => (p._id == id || p.id == id))
+    return userStore.wishlist.some(p => p._id == id)
 }
 
 onMounted(() => {

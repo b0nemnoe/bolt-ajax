@@ -13,7 +13,7 @@ const couponCode = ref('')
 
 const getProduct = (id) => {
   if (!productStore.products || productStore.products.length === 0) return null
-  return productStore.products.find(p => p.id == id || p._id == id)
+  return productStore.products.find(p => p._id == id)
 }
 
 const validCartItems = computed(() => {
@@ -105,16 +105,16 @@ const validCartItems = computed(() => {
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>{{ $t('cart.subtotal') }}</span>
-                            <span>{{ cartStore.originalTotal() }} Ft</span>
+                            <span>{{ cartStore.originalTotal }} Ft</span>
                         </div>
                         <div v-if="cartStore.coupon" class="d-flex justify-content-between mb-2 text-success">
                             <span>{{ $t('cart.discount') }}</span>
-                            <span>-{{ cartStore.discountAmount() }} Ft</span>
+                            <span>-{{ cartStore.discountAmount }} Ft</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between fs-4 fw-bold">
                             <span>{{ $t('cart.final_total') }}</span>
-                            <span class="text-primary">{{ cartStore.finalTotal() }} Ft</span>
+                            <span class="text-primary">{{ cartStore.finalTotal }} Ft</span>
                         </div>
                     </div>
                 </div>

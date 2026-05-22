@@ -80,7 +80,7 @@ router.get('/', async (req, res) => {
             .limit(limit);
 
         const transformed = products.map(p => ({
-            id: p._id,
+            _id: p._id,
             name: p.name,
             category: p.category,
             unit: p.unit,
@@ -111,7 +111,7 @@ router.get('/:id', async (req, res) => {
         }
         
         const transformed = {
-            id: product._id,
+            _id: product._id,
             category: product.category,
             name: product.name,
             unit: product.unit,
@@ -167,11 +167,9 @@ router.post('/', [
         });
 
         const newProduct = await product.save();
-        console.log("--> SIKER! Termék elmentve:", newProduct._id);
-        
         res.status(201).json({
             ...newProduct._doc,
-            id: newProduct._id
+            _id: newProduct._id
         });
     } catch (dbError) {
         console.error("!!! HIBA AZ ADATBÁZIS MENTÉSNÉL !!!");
