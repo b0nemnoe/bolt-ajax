@@ -11,7 +11,6 @@
     </div>
 
     <div v-else>
-      <!-- DESKTOP VIEW (Table) -->
       <div class="d-none d-lg-block shadow-sm rounded-4 overflow-hidden border bg-white">
         <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
@@ -32,7 +31,7 @@
               <td>
                 <div class="fw-bold text-dark">{{ order.user?.email || $t('admin.unknown') }}</div>
                 <div class="text-muted extra-small">ID: {{ order._id.slice(-8) }}</div>
-                <div v-if="order.shippingAddress" class="text-muted mt-1" style="font-size: 0.75rem;">
+                  <div v-if="order.shippingAddress" class="text-muted mt-1" style="font-size: 0.75rem;">
                   📍 {{ order.shippingAddress }}
                 </div>
               </td>
@@ -65,7 +64,6 @@
         </table>
       </div>
 
-      <!-- MOBILE VIEW (Cards) -->
       <div class="d-lg-none d-flex flex-column gap-3 px-2 mb-5">
         <div v-for="order in orderStore.adminOrders" :key="order._id" class="order-card p-3 shadow-sm bg-white rounded-4 border">
           <div class="d-flex justify-content-between align-items-start mb-3">
@@ -168,7 +166,6 @@ const getStatusClass = (status) => {
   font-size: 0.7rem;
 }
 
-/* Status select styles */
 .status-select {
   border-radius: 8px;
   font-weight: 600;
@@ -179,7 +176,6 @@ const getStatusClass = (status) => {
 .status-success { background-color: #f0fdf4; color: #166534; border-color: #bbf7d0; }
 .status-danger { background-color: #fef2f2; color: #991b1b; border-color: #fecaca; }
 
-/* Mobile Card styles */
 .order-card {
   transition: transform 0.2s;
 }
