@@ -121,7 +121,7 @@ export const useCartStore = defineStore("cart", () => {
         try {
             await $axios.post('/orders', {
                 items: orderItems,
-                totalPrice: finalTotal()
+                couponCode: coupon.value ? coupon.value.code : null
             })
             toast.success("Rendelés sikeresen leadva! 🚀")
             cart.value = {}
