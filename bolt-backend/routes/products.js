@@ -49,12 +49,17 @@ router.get('/', async (req, res) => {
         const sort = req.query.sort || 'default';
         const inStock = req.query.inStock === 'true';
 
+        const escapeRegex = (string) => {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        };
+
         let query = {};
         
         if (search) {
+            const escapedSearch = escapeRegex(search);
             query.$or = [
-                { name: { $regex: search, $options: 'i' } },
-                { desc: { $regex: search, $options: 'i' } }
+                { name: { $regex: escapedSearch, $options: 'i' } },
+                { desc: { $regex: escapedSearch, $options: 'i' } }
             ];
         }
 
