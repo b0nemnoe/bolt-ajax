@@ -116,6 +116,9 @@ router.patch('/:id', [auth, admin], async (req, res) => {
             { status: status }, 
             { new: true }
         );
+        if (!order) {
+            return res.status(404).json({ message: 'A rendelés nem található' });
+        }
         res.json(order);
     } catch (err) {
         res.status(500).json({ message: err.message });
