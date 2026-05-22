@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const express = require('express');
@@ -10,13 +11,32 @@ const { OAuth2Client } = require('google-auth-library');
 const axios = require('axios');
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+const generateAccessToken = (user) => {
+    return jwt.sign({ id: user._id, isAdmin: user.isAdmin }, process.env.JWT_SECRET, { expiresIn: '15m' });
+};
+
+const generateRefreshToken = (user) => {
+    const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+    return jwt.sign({ id: user._id }, refreshSecret, { expiresIn: '7d' });
+};
+
+const setRefreshCookie = (res, token) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.cookie('refreshToken', token, {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000
+    });
+};
 const { body } = require('express-validator');
 const validate = require('../middleware/validate');
 const rateLimit = require('express-rate-limit');
 
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
-    max: 5,
+    max: 10,
     message: { message: 'Túl sok próbálkozás! Kérjük, várj 15 percet.' }
 });
 
@@ -70,13 +90,11 @@ router.post('/login', [
         }
 
     
-        const token = jwt.sign(
-            { id: user._id, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET, 
-            { expiresIn: '1h' }
-        );
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
 
-        res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+        setRefreshCookie(res, refreshToken);
+        res.json({ accessToken, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
 
     } catch (err) {
         res.status(500).json({ message: 'Szerverhiba' });
@@ -110,13 +128,11 @@ router.post('/google', authLimiter, async (req, res) => {
             await user.save();
         }
 
-        const token = jwt.sign(
-            { id: user._id, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
 
-        res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+        setRefreshCookie(res, refreshToken);
+        res.json({ accessToken, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
 
     } catch (err) {
         console.error('Google Auth Error:', err);
@@ -150,13 +166,11 @@ router.post('/facebook', authLimiter, async (req, res) => {
             await user.save();
         }
 
-        const token = jwt.sign(
-            { id: user._id, isAdmin: user.isAdmin },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
+        const accessToken = generateAccessToken(user);
+        const refreshToken = generateRefreshToken(user);
 
-        res.json({ token, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+        setRefreshCookie(res, refreshToken);
+        res.json({ accessToken, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
 
     } catch (err) {
         console.error('Facebook Auth Error:', err);
@@ -227,7 +241,7 @@ router.post('/forgot-password', [
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: 'Nincs fiók ezzel az email címmel.' });
+            return res.json({ message: 'Ha ez az email regisztrált, küldtünk egy levelet a jelszó visszaállításához.' });
         }
 
         const token = crypto.randomBytes(20).toString('hex');
@@ -239,7 +253,7 @@ router.post('/forgot-password', [
 
         sendPasswordResetEmail(user.email, token);
 
-        res.json({ message: 'Email elküldve! Ellenőrizd a fiókodat.' });
+        res.json({ message: 'Ha ez az email regisztrált, küldtünk egy levelet a jelszó visszaállításához.' });
 
     } catch (err) {
         res.status(500).json({ message: 'Hiba történt a feldolgozás során.' });
@@ -294,12 +308,55 @@ router.put('/cart', auth, async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'Felhasználó nem található' });
         
-        user.cart = req.body.cart;
+        const cart = req.body.cart || {};
+        const validatedCart = {};
+        
+        const Product = require('../models/Product');
+        
+        for (const [productId, quantity] of Object.entries(cart)) {
+            if (!mongoose.Types.ObjectId.isValid(productId)) continue;
+            if (!Number.isInteger(quantity) || quantity <= 0) continue;
+            
+            const product = await Product.findById(productId);
+            if (product) {
+                validatedCart[productId] = quantity;
+            }
+        }
+        
+        user.cart = validatedCart;
         await user.save();
         res.json(user.cart);
     } catch (err) {
         res.status(500).json({ message: 'Hiba a kosár mentésekor' });
     }
+});
+
+router.post('/refresh', async (req, res) => {
+    const refreshToken = req.cookies?.refreshToken;
+    if (!refreshToken) return res.status(401).json({ message: 'Nincs érvényes munkamenet' });
+
+    try {
+        const refreshSecret = process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET;
+        const decoded = jwt.verify(refreshToken, refreshSecret);
+        
+        const user = await User.findById(decoded.id);
+        if (!user) return res.status(401).json({ message: 'Felhasználó nem található' });
+
+        const accessToken = generateAccessToken(user);
+        res.json({ accessToken, user: { id: user._id, email: user.email, isAdmin: user.isAdmin } });
+    } catch (err) {
+        res.status(401).json({ message: 'Lejárt vagy érvénytelen munkamenet' });
+    }
+});
+
+router.post('/logout', (req, res) => {
+    const isProduction = process.env.NODE_ENV === 'production';
+    res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: isProduction,
+        sameSite: isProduction ? 'none' : 'lax'
+    });
+    res.json({ message: 'Sikeres kijelentkezés' });
 });
 
 module.exports = router;

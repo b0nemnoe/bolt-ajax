@@ -138,7 +138,7 @@ export const useProductStore = defineStore("product", () => {
     const deleteProductFromDb = (id) => {
         $axios.delete(`/products/${id}`).then(() => {
             toast.success("Sikeres törlés")
-            products.value = products.value.filter((p) => p.id !== id)
+            products.value = products.value.filter((p) => p._id !== id)
         }).catch(() => toast.error("Hiba a törléskor"))
     }
 

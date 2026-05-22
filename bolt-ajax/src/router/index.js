@@ -85,11 +85,15 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
   const userString = localStorage.getItem('user')
-  const user = userString ? JSON.parse(userString) : null
+  let user = null
+  try {
+    user = userString && userString !== 'undefined' ? JSON.parse(userString) : null
+  } catch (e) {
+    localStorage.removeItem('user')
+  }
 
-  if (to.meta.requiresAuth && !token) {
+  if (to.meta.requiresAuth && !user) {
     return next('/login') 
   }
 

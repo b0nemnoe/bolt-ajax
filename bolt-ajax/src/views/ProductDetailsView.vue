@@ -36,10 +36,9 @@ const getImageUrl = (imageName) => {
 }
 
 const isInWishlist = (id) => {
-    return userStore.wishlist.some(p => (p._id == id || p.id == id))
+    return userStore.wishlist.some(p => p._id == id)
 }
 
-//  REVIEW LOGIC
 
 const startEdit = (review) => {
   editingReviewId.value = review._id

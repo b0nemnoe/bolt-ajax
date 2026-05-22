@@ -42,19 +42,24 @@ router.get('/', async (req, res) => {
     console.log("--> GET /api/products hívás érkezett (pagination)!");
     
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 12;
-        const search = req.query.search || '';
-        const category = req.query.category || 'all';
-        const sort = req.query.sort || 'default';
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 12, 1), 100);
+        const search = typeof req.query.search === 'string' ? req.query.search : '';
+        const category = typeof req.query.category === 'string' ? req.query.category : 'all';
+        const sort = typeof req.query.sort === 'string' ? req.query.sort : 'default';
         const inStock = req.query.inStock === 'true';
+
+        const escapeRegex = (string) => {
+            return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        };
 
         let query = {};
         
         if (search) {
+            const escapedSearch = escapeRegex(search);
             query.$or = [
-                { name: { $regex: search, $options: 'i' } },
-                { desc: { $regex: search, $options: 'i' } }
+                { name: { $regex: escapedSearch, $options: 'i' } },
+                { desc: { $regex: escapedSearch, $options: 'i' } }
             ];
         }
 
@@ -80,7 +85,7 @@ router.get('/', async (req, res) => {
             .limit(limit);
 
         const transformed = products.map(p => ({
-            id: p._id,
+            _id: p._id,
             name: p.name,
             category: p.category,
             unit: p.unit,
@@ -111,7 +116,7 @@ router.get('/:id', async (req, res) => {
         }
         
         const transformed = {
-            id: product._id,
+            _id: product._id,
             category: product.category,
             name: product.name,
             unit: product.unit,
@@ -130,21 +135,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', [
     auth, 
     admin,
-    (req, res, next) => {
-        const uploadMiddleware = upload.single('image');
-        uploadMiddleware(req, res, (err) => {
-            if (err) {
-                console.error("!!! SÚLYOS HIBA A KÉPFELTÖLTÉSNÉL !!!");
-                console.error(JSON.stringify(err, null, 2));
-                return res.status(500).json({ 
-                    message: "Képfeltöltési hiba", 
-                    error: err.message || "Ismeretlen Cloudinary hiba",
-                    details: err
-                });
-            }
-            next();
-        });
-    },
+    upload.single('image'),
     body('name').notEmpty().withMessage('A termék neve kötelező!').trim(),
     body('price').isNumeric().withMessage('Az árnak számnak kell lennie!'),
     body('category').optional().isString().trim(),
@@ -167,11 +158,9 @@ router.post('/', [
         });
 
         const newProduct = await product.save();
-        console.log("--> SIKER! Termék elmentve:", newProduct._id);
-        
         res.status(201).json({
             ...newProduct._doc,
-            id: newProduct._id
+            _id: newProduct._id
         });
     } catch (dbError) {
         console.error("!!! HIBA AZ ADATBÁZIS MENTÉSNÉL !!!");
@@ -212,7 +201,10 @@ router.put('/:id', [
 
 router.delete('/:id', [auth, admin], async (req, res) => {
     try {
-        await Product.findByIdAndDelete(req.params.id);
+        const deleted = await Product.findByIdAndDelete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Termék nem található' });
+        }
         res.json({ message: 'Termék törölve' });
     } catch (err) {
         res.status(500).json({ message: err.message });

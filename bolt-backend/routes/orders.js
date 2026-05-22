@@ -1,38 +1,99 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const auth = require('../middleware/auth');
 const admin = require('../middleware/admin');
 const Order = require('../models/Order');
 const Product = require('../models/Product');
 const User = require('../models/User');
+const Coupon = require('../models/Coupon');
 const { sendOrderConfirmation } = require('../utils/emailService');
 
 router.post('/', auth, async (req, res) => {
-    const { items, totalPrice } = req.body;
+    const { items, couponCode, shippingAddress } = req.body;
+    
+    if (!shippingAddress || shippingAddress.trim() === '') {
+        return res.status(400).json({ message: 'A szállítási cím megadása kötelező!' });
+    }
+    
+    if (!items || items.length === 0) {
+        return res.status(400).json({ message: 'A rendelés üres!' });
+    }
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
 
     try {
-        const newOrder = new Order({
-            user: req.user.id,
-            items: items,
-            totalPrice: totalPrice
-        });
+        let calculatedTotal = 0;
+        const processedItems = [];
 
-        const savedOrder = await newOrder.save();
         for (const item of items) {
-            await Product.findByIdAndUpdate(item.productId, {
-                $inc: { store: -item.quantity }
+            const product = await Product.findById(item.productId).session(session);
+            
+            if (!product) {
+                throw new Error(`A termék nem található: ${item.name}`);
+            }
+
+            if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+                throw new Error(`Érvénytelen mennyiség a következő terméknél: ${product.name}`);
+            }
+
+            if (product.store < item.quantity) {
+                throw new Error(`Nincs elég készleten a következő termékből: ${product.name}`);
+            }
+
+            calculatedTotal += product.price * item.quantity;
+
+
+            await Product.findByIdAndUpdate(
+                item.productId, 
+                { $inc: { store: -item.quantity } },
+                { session }
+            );
+
+            processedItems.push({
+                productId: product._id,
+                name: product.name,
+                quantity: item.quantity,
+                price: product.price
             });
         }
 
-        const user = await User.findById(req.user.id);
+        if (couponCode) {
+            const coupon = await Coupon.findOne({ code: couponCode, isActive: true }).session(session);
+            if (coupon) {
+                const discount = Math.round(calculatedTotal * (coupon.discountPercent / 100));
+                calculatedTotal -= discount;
+            }
+        }
+
+        const newOrder = new Order({
+            user: req.user.id,
+            items: processedItems,
+            totalPrice: calculatedTotal,
+            shippingAddress: shippingAddress.trim()
+        });
+
+        const savedOrder = await newOrder.save({ session });
         
+        const user = await User.findById(req.user.id).session(session);
+        if (user) {
+            user.cart = {};
+            await user.save({ session });
+        }
+        
+        await session.commitTransaction();
+        session.endSession();
+
         if (user && user.email) {
             sendOrderConfirmation(user.email, savedOrder);
         }
 
         res.status(201).json(savedOrder);
     } catch (err) {
-        res.status(500).json({ message: err.message });
+        await session.abortTransaction();
+        session.endSession();
+        res.status(400).json({ message: err.message });
     }
 });
 
@@ -64,6 +125,9 @@ router.patch('/:id', [auth, admin], async (req, res) => {
             { status: status }, 
             { new: true }
         );
+        if (!order) {
+            return res.status(404).json({ message: 'A rendelés nem található' });
+        }
         res.json(order);
     } catch (err) {
         res.status(500).json({ message: err.message });

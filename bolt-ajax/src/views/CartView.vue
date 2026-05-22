@@ -10,10 +10,11 @@ const productStore = useProductStore()
 const userStore = useUserStore()
 
 const couponCode = ref('')
+const shippingAddress = ref(userStore.user?.address || '')
 
 const getProduct = (id) => {
   if (!productStore.products || productStore.products.length === 0) return null
-  return productStore.products.find(p => p.id == id || p._id == id)
+  return productStore.products.find(p => p._id == id)
 }
 
 const validCartItems = computed(() => {
@@ -105,16 +106,16 @@ const validCartItems = computed(() => {
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-2">
                             <span>{{ $t('cart.subtotal') }}</span>
-                            <span>{{ cartStore.originalTotal() }} Ft</span>
+                            <span>{{ cartStore.originalTotal }} Ft</span>
                         </div>
                         <div v-if="cartStore.coupon" class="d-flex justify-content-between mb-2 text-success">
                             <span>{{ $t('cart.discount') }}</span>
-                            <span>-{{ cartStore.discountAmount() }} Ft</span>
+                            <span>-{{ cartStore.discountAmount }} Ft</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between fs-4 fw-bold">
                             <span>{{ $t('cart.final_total') }}</span>
-                            <span class="text-primary">{{ cartStore.finalTotal() }} Ft</span>
+                            <span class="text-primary">{{ cartStore.finalTotal }} Ft</span>
                         </div>
                     </div>
                 </div>
@@ -122,11 +123,21 @@ const validCartItems = computed(() => {
 
         </div>
 
+        <div v-if="userStore.token" class="card shadow-sm border-0 bg-light mt-4 mb-2">
+          <div class="card-body">
+            <h5 class="card-title mb-3">Szállítási cím</h5>
+            <div class="mb-3">
+              <label class="form-label text-muted small">Ide fogjuk szállítani a rendelésed (Irányítószám, Város, Utca, Házszám)</label>
+              <textarea v-model="shippingAddress" class="form-control" rows="2" placeholder="Add meg a pontos szállítási címet..."></textarea>
+            </div>
+          </div>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mt-4 mb-5">
           <button @click="cartStore.emptyCart()" class="btn btn-outline-danger">{{ $t('cart.empty_cart_btn') }}</button>
           
           <div v-if="userStore.token">
-             <button @click="cartStore.checkout()" class="btn btn-success btn-lg shadow fw-bold px-4">{{ $t('cart.checkout_btn') }}</button>
+             <button @click="cartStore.checkout(shippingAddress)" class="btn btn-success btn-lg shadow fw-bold px-4">{{ $t('cart.checkout_btn') }}</button>
           </div>
           <div v-else>
             <RouterLink to="/login" class="btn btn-warning shadow fw-bold">{{ $t('cart.login_to_order') }}</RouterLink>

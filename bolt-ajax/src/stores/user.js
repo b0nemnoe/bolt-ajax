@@ -7,19 +7,16 @@ import { useCartStore } from "./cart"
 
 export const useUserStore = defineStore("user", () => {
     const user = ref(JSON.parse(localStorage.getItem('user')) || null)
-    const token = ref(localStorage.getItem('token') || '')
+    const token = ref('')
     const wishlist = ref([])
     const toast = useToast()
-
-    // profile
 
     const login = async (email, password) => {
         try {
             const response = await $axios.post('/auth/login', { email, password })
-            token.value = response.data.token
+            token.value = response.data.token || response.data.accessToken
             user.value = response.data.user
             
-            localStorage.setItem('token', token.value)
             localStorage.setItem('user', JSON.stringify(user.value))
             
             toast.success("Sikeres bejelentkezés!")
@@ -36,10 +33,9 @@ export const useUserStore = defineStore("user", () => {
     const loginWithGoogle = async (credential) => {
         try {
             const response = await $axios.post('/auth/google', { credential })
-            token.value = response.data.token
+            token.value = response.data.token || response.data.accessToken
             user.value = response.data.user
             
-            localStorage.setItem('token', token.value)
             localStorage.setItem('user', JSON.stringify(user.value))
             
             toast.success("Sikeres bejelentkezés Google-lel!")
@@ -56,10 +52,9 @@ export const useUserStore = defineStore("user", () => {
     const loginWithFacebook = async (accessToken) => {
         try {
             const response = await $axios.post('/auth/facebook', { accessToken })
-            token.value = response.data.token
+            token.value = response.data.token || response.data.accessToken
             user.value = response.data.user
             
-            localStorage.setItem('token', token.value)
             localStorage.setItem('user', JSON.stringify(user.value))
             
             toast.success("Sikeres bejelentkezés Facebookkal!")
@@ -83,11 +78,15 @@ export const useUserStore = defineStore("user", () => {
         }
     }
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await $axios.post('/auth/logout');
+        } catch (e) {
+            console.error("Hiba a kijelentkezéskor");
+        }
         token.value = ''
         user.value = null
         wishlist.value = []
-        localStorage.removeItem('token')
         localStorage.removeItem('user')
         
         const cartStore = useCartStore()
@@ -95,6 +94,22 @@ export const useUserStore = defineStore("user", () => {
         localStorage.removeItem('cart')
         
         router.push('/login')
+    }
+
+    const initAuth = async () => {
+        try {
+            const response = await $axios.post('/auth/refresh')
+            token.value = response.data.accessToken
+            user.value = response.data.user
+            localStorage.setItem('user', JSON.stringify(user.value))
+            
+            await fetchWishlist()
+            await useCartStore().fetchCart()
+        } catch (error) {
+            token.value = ''
+            user.value = null
+            localStorage.removeItem('user')
+        }
     }
 
     const updateProfile = async (profileData) => {
@@ -168,5 +183,5 @@ export const useUserStore = defineStore("user", () => {
         }
     }
 
-    return { user, token, wishlist, login, register, logout, updateProfile, changePassword, fetchWishlist, toggleWishlist, forgotPassword, resetPassword, loginWithGoogle, loginWithFacebook }
+    return { user, token, wishlist, login, register, logout, initAuth, updateProfile, changePassword, fetchWishlist, toggleWishlist, forgotPassword, resetPassword, loginWithGoogle, loginWithFacebook }
 })
