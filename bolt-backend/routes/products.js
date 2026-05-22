@@ -201,7 +201,10 @@ router.put('/:id', [
 
 router.delete('/:id', [auth, admin], async (req, res) => {
     try {
-        await Product.findByIdAndDelete(req.params.id);
+        const deleted = await Product.findByIdAndDelete(req.params.id);
+        if (!deleted) {
+            return res.status(404).json({ message: 'Termék nem található' });
+        }
         res.json({ message: 'Termék törölve' });
     } catch (err) {
         res.status(500).json({ message: err.message });
