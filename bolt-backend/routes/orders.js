@@ -71,11 +71,15 @@ router.post('/', auth, async (req, res) => {
 
         const savedOrder = await newOrder.save({ session });
         
+        const user = await User.findById(req.user.id).session(session);
+        if (user) {
+            user.cart = {};
+            await user.save({ session });
+        }
+        
         await session.commitTransaction();
         session.endSession();
 
-        const user = await User.findById(req.user.id);
-        
         if (user && user.email) {
             sendOrderConfirmation(user.email, savedOrder);
         }

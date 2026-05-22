@@ -69,9 +69,18 @@ export const useCartStore = defineStore("cart", () => {
         toast.error("Termék törölve a kosárból!")
     }
 
-    const emptyCart = () => {
+    const emptyCart = async () => {
         cart.value = {}
         toast.error("Kosár kiürítve")
+        const userStore = useUserStore()
+        if (userStore.token) {
+            clearTimeout(syncTimeout)
+            try {
+                await $axios.put('/auth/cart', { cart: {} })
+            } catch (e) {
+                console.error("Hiba az üres kosár mentésekor")
+            }
+        }
     }
 
     const originalTotal = computed(() => {
