@@ -42,11 +42,11 @@ router.get('/', async (req, res) => {
     console.log("--> GET /api/products hívás érkezett (pagination)!");
     
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 12;
-        const search = req.query.search || '';
-        const category = req.query.category || 'all';
-        const sort = req.query.sort || 'default';
+        const page = Math.max(parseInt(req.query.page) || 1, 1);
+        const limit = Math.min(Math.max(parseInt(req.query.limit) || 12, 1), 100);
+        const search = typeof req.query.search === 'string' ? req.query.search : '';
+        const category = typeof req.query.category === 'string' ? req.query.category : 'all';
+        const sort = typeof req.query.sort === 'string' ? req.query.sort : 'default';
         const inStock = req.query.inStock === 'true';
 
         const escapeRegex = (string) => {
