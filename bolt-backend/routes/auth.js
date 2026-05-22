@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const crypto = require('crypto');
 const { sendPasswordResetEmail } = require('../utils/emailService');
 const express = require('express');
@@ -306,7 +307,22 @@ router.put('/cart', auth, async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'Felhasználó nem található' });
         
-        user.cart = req.body.cart;
+        const cart = req.body.cart || {};
+        const validatedCart = {};
+        
+        const Product = require('../models/Product');
+        
+        for (const [productId, quantity] of Object.entries(cart)) {
+            if (!mongoose.Types.ObjectId.isValid(productId)) continue;
+            if (!Number.isInteger(quantity) || quantity <= 0) continue;
+            
+            const product = await Product.findById(productId);
+            if (product) {
+                validatedCart[productId] = quantity;
+            }
+        }
+        
+        user.cart = validatedCart;
         await user.save();
         res.json(user.cart);
     } catch (err) {

@@ -30,6 +30,10 @@ router.post('/', auth, async (req, res) => {
                 throw new Error(`A termék nem található: ${item.name}`);
             }
 
+            if (!Number.isInteger(item.quantity) || item.quantity <= 0) {
+                throw new Error(`Érvénytelen mennyiség a következő terméknél: ${product.name}`);
+            }
+
             if (product.store < item.quantity) {
                 throw new Error(`Nincs elég készleten a következő termékből: ${product.name}`);
             }
