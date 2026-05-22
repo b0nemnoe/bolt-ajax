@@ -239,7 +239,7 @@ router.post('/forgot-password', [
     try {
         const user = await User.findOne({ email });
         if (!user) {
-            return res.status(404).json({ message: 'Nincs fiók ezzel az email címmel.' });
+            return res.json({ message: 'Ha ez az email regisztrált, küldtünk egy levelet a jelszó visszaállításához.' });
         }
 
         const token = crypto.randomBytes(20).toString('hex');
@@ -251,7 +251,7 @@ router.post('/forgot-password', [
 
         sendPasswordResetEmail(user.email, token);
 
-        res.json({ message: 'Email elküldve! Ellenőrizd a fiókodat.' });
+        res.json({ message: 'Ha ez az email regisztrált, küldtünk egy levelet a jelszó visszaállításához.' });
 
     } catch (err) {
         res.status(500).json({ message: 'Hiba történt a feldolgozás során.' });
